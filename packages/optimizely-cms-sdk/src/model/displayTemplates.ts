@@ -62,25 +62,20 @@ export type DisplayTemplate<T = DisplayTemplateVariant> = T & {
   __type: 'displayTemplate';
 };
 
-
 export function parseDisplaySettings(
-  settings: DisplaySettingsType[] | null | undefined,
-  templateSettings: Record<string, { editor: string; choices: Record<string, any> }>
-): Record<string, string> {
-  if (!settings || settings.length === 0) return {};
+  displaySettings?: DisplaySettingsType[] | null
+): Record<string, string> | undefined {
+  if (!displaySettings) {
+    return undefined; // Return undefined if displaySettings is not provided
+  }
 
-  const result: Record<string, string> = {};
+  const result: Record<string, string> = {}; // Initialize an empty object
 
-  settings.forEach(s => {
-    const settingDef = templateSettings[s.key];
-    if (!settingDef) return;
-
-    if (settingDef.editor === 'select') {
-      result[s.key] = s.value;
-    } else if (settingDef.editor === 'checkbox') {
-      result[s.key] = s.value === 'true' ? 'true' : 'false';
-    }
-  });
+  // Iterate over the input array
+  for (const item of displaySettings) {
+    // Assign the value to the key in the result object
+    result[item.key] = item.value;
+  }
 
   return result;
 }
