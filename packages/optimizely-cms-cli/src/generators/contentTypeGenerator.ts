@@ -1,10 +1,6 @@
 import { writeFile } from 'node:fs/promises';
 import { join } from 'node:path';
-import {
-  ContentType,
-  ContentTypeProperties,
-  DisplayTemplate,
-} from './manifest.js';
+import { ContentType, ContentTypeProperties, DisplayTemplate } from './manifest.js';
 import { generateDisplayTemplateCode } from './displayTemplateGenerator.js';
 
 /**
@@ -19,20 +15,15 @@ export async function generateContentTypeFiles(
   currentGroup?: string,
 ): Promise<string[]> {
   const generatedFiles = await Promise.all(
-    contentTypes.map(async (contentType) => {
+    contentTypes.map(async contentType => {
       const fileName = generateFileName(contentType.key);
       const filePath = join(outputDir, fileName);
 
       // Generate content type code
-      let fileContent = generateContentTypeCode(
-        contentType,
-        contentTypeToGroupMap,
-        currentGroup,
-      );
+      let fileContent = generateContentTypeCode(contentType, contentTypeToGroupMap, currentGroup);
 
       // Append display templates for this specific content type
-      const relatedTemplates =
-        displayTemplatesByContentType.get(contentType.key) || [];
+      const relatedTemplates = displayTemplatesByContentType.get(contentType.key) || [];
       if (relatedTemplates.length > 0) {
         // Update import to include displayTemplate
         fileContent = fileContent.replace(
@@ -73,9 +64,7 @@ export function cleanKey(key: string): string {
   const cleanKey = key.replace(/[^a-zA-Z0-9_]/g, '');
 
   if (!cleanKey || !/[a-zA-Z0-9]/.test(cleanKey)) {
-    throw new Error(
-      `Invalid key "${key}": must contain at least one alphanumeric character`,
-    );
+    throw new Error(`Invalid key "${key}": must contain at least one alphanumeric character`);
   }
 
   return cleanKey;
@@ -102,18 +91,13 @@ export function generateContentTypeCode(
 
   // Collect component imports
   const componentImports = new Set<string>();
-  const properties = contentType.properties
-    ? generatePropertiesCode(
-        contentType.properties,
-        contentType.key,
-        componentImports,
-      )
-    : '{}';
+  const properties =
+    contentType.properties ? generatePropertiesCode(contentType.properties, contentType.key, componentImports) : '{}';
 
   // Generate import statements
   const imports = ["import { contentType } from '@optimizely/cms-sdk';"];
   if (componentImports.size > 0) {
-    const importStatements = Array.from(componentImports).map((key) => {
+    const importStatements = Array.from(componentImports).map(key => {
       const fileName = generateFileName(key);
       const exportName = generateExportName(key);
 
@@ -134,16 +118,15 @@ export function generateContentTypeCode(
 
   // Generate compositionBehaviors if present
   const compositionBehaviors =
-    contentType.compositionBehaviors &&
-    contentType.compositionBehaviors.length > 0
-      ? `\n  compositionBehaviors: [${contentType.compositionBehaviors.map((b) => `'${escapeSingleQuote(b)}'`).join(', ')}],`
-      : '';
+    contentType.compositionBehaviors && contentType.compositionBehaviors.length > 0 ?
+      `\n  compositionBehaviors: [${contentType.compositionBehaviors.map(b => `'${escapeSingleQuote(b)}'`).join(', ')}],`
+    : '';
 
   // Generate mayContainTypes if present
   const mayContainTypes =
-    contentType.mayContainTypes && contentType.mayContainTypes.length > 0
-      ? `\n  mayContainTypes: [${contentType.mayContainTypes.map((t) => `'${escapeSingleQuote(t)}'`).join(', ')}],`
-      : '';
+    contentType.mayContainTypes && contentType.mayContainTypes.length > 0 ?
+      `\n  mayContainTypes: [${contentType.mayContainTypes.map(t => `'${escapeSingleQuote(t)}'`).join(', ')}],`
+    : '';
 
   const code = `${imports.join('\n')}
 
@@ -179,14 +162,8 @@ function generatePropertiesCode(
   componentImports: Set<string>,
 ): string {
   const propertyEntries = Object.entries(properties).map(([name, prop]) => {
-    const safeKey = /^[a-zA-Z_][a-zA-Z0-9_]*$/.test(name)
-      ? name
-      : `'${escapeSingleQuote(name)}'`;
-    const propertyDef = generatePropertyDefinition(
-      prop,
-      contentTypeKey,
-      componentImports,
-    );
+    const safeKey = /^[a-zA-Z_][a-zA-Z0-9_]*$/.test(name) ? name : `'${escapeSingleQuote(name)}'`;
+    const propertyDef = generatePropertyDefinition(prop, contentTypeKey, componentImports);
     return `    ${safeKey}: ${propertyDef}`;
   });
 
@@ -198,29 +175,10 @@ function generatePropertiesCode(
 }
 
 /**
- * Generates a single property definition
+ * Pushes common metadata fields to the parts array.
+ * Handles: displayName, description, isRequired, isLocalized, group, sortOrder, indexingType
  */
-function generatePropertyDefinition(
-  property: ContentTypeProperties.All,
-  contentTypeKey: string,
-  componentImports: Set<string>,
-): string {
-  if ('items' in property && property.type === 'array') {
-    // Array type
-    const itemDef = generatePropertyDefinition(
-      property.items,
-      contentTypeKey,
-      componentImports,
-    );
-    return `{\n      type: 'array',\n      items: ${itemDef},\n    }`;
-  }
-
-  // Non-array types
-  const parts: string[] = [];
-
-  // Base properties
-  parts.push(`type: '${property.type}'`);
-
+function pushMetadataFields(property: ContentTypeProperties.Base, parts: string[]): void {
   if ('displayName' in property && property.displayName) {
     parts.push(`displayName: '${escapeSingleQuote(property.displayName)}'`);
   }
@@ -229,12 +187,12 @@ function generatePropertyDefinition(
     parts.push(`description: '${escapeSingleQuote(property.description)}'`);
   }
 
-  if ('required' in property && property.required) {
-    parts.push(`required: true`);
+  if ('isRequired' in property && property.isRequired) {
+    parts.push(`isRequired: true`);
   }
 
-  if ('localized' in property && property.localized) {
-    parts.push(`localized: true`);
+  if ('isLocalized' in property && property.isLocalized) {
+    parts.push(`isLocalized: true`);
   }
 
   if ('group' in property && property.group) {
@@ -248,6 +206,47 @@ function generatePropertyDefinition(
   if ('indexingType' in property && property.indexingType) {
     parts.push(`indexingType: '${property.indexingType}'`);
   }
+}
+
+/**
+ * Generates a single property definition
+ */
+function generatePropertyDefinition(
+  property: ContentTypeProperties.All,
+  contentTypeKey: string,
+  componentImports: Set<string>,
+): string {
+  if ('items' in property && property.type === 'array') {
+    // Array type - generate items definition
+    const itemDef = generatePropertyDefinition(property.items, contentTypeKey, componentImports);
+
+    // Collect array-level properties
+    const parts: string[] = [];
+    parts.push(`type: 'array'`);
+
+    pushMetadataFields(property, parts);
+
+    // Array-specific properties
+    if ('minItems' in property && property.minItems !== undefined) {
+      parts.push(`minItems: ${property.minItems}`);
+    }
+
+    if ('maxItems' in property && property.maxItems !== undefined) {
+      parts.push(`maxItems: ${property.maxItems}`);
+    }
+
+    parts.push(`items: ${itemDef}`);
+
+    return `{\n      ${parts.join(',\n      ')},\n    }`;
+  }
+
+  // Non-array types
+  const parts: string[] = [];
+
+  // Base properties
+  parts.push(`type: '${property.type}'`);
+
+  pushMetadataFields(property, parts);
 
   // Format (common to many types)
   if ('format' in property && property.format) {
@@ -272,7 +271,7 @@ function generatePropertyDefinition(
       const normalized = normalizeEnumValues(property.enum, 'string');
       const enumValues = normalized
         .map(
-          (v) =>
+          v =>
             `\n        { value: '${escapeSingleQuote(String(v.value))}', displayName: '${escapeSingleQuote(v.displayName)}' }`,
         )
         .join(',');
@@ -293,10 +292,7 @@ function generatePropertyDefinition(
     if ('enum' in property && property.enum) {
       const normalized = normalizeEnumValues(property.enum, 'number');
       const enumValues = normalized
-        .map(
-          (v) =>
-            `\n        { value: ${v.value}, displayName: '${escapeSingleQuote(v.displayName)}' }`,
-        )
+        .map(v => `\n        { value: ${v.value}, displayName: '${escapeSingleQuote(v.displayName)}' }`)
         .join(',');
       parts.push(`enum: [${enumValues},\n      ]`);
     }
@@ -315,26 +311,18 @@ function generatePropertyDefinition(
 
   // Content/ContentReference-specific properties
   if (property.type === 'content' || property.type === 'contentReference') {
-    if (
-      'allowedTypes' in property &&
-      property.allowedTypes &&
-      property.allowedTypes.length > 0
-    ) {
+    if ('allowedTypes' in property && property.allowedTypes && property.allowedTypes.length > 0) {
       const types = property.allowedTypes
-        .map((t) => (t === '_self' ? contentTypeKey : t))
-        .map((t) => `'${escapeSingleQuote(t)}'`)
+        .map(t => (t === '_self' ? contentTypeKey : t))
+        .map(t => `'${escapeSingleQuote(t)}'`)
         .join(', ');
       parts.push(`allowedTypes: [${types}]`);
     }
 
-    if (
-      'restrictedTypes' in property &&
-      property.restrictedTypes &&
-      property.restrictedTypes.length > 0
-    ) {
+    if ('restrictedTypes' in property && property.restrictedTypes && property.restrictedTypes.length > 0) {
       const types = property.restrictedTypes
-        .map((t) => (t === '_self' ? contentTypeKey : t))
-        .map((t) => `'${escapeSingleQuote(t)}'`)
+        .map(t => (t === '_self' ? contentTypeKey : t))
+        .map(t => `'${escapeSingleQuote(t)}'`)
         .join(', ');
       parts.push(`restrictedTypes: [${types}]`);
     }
@@ -412,3 +400,4 @@ export function escapeSingleQuote(str: string): string {
   // Escape single quotes for single-quoted string literals
   return withoutOuterQuotes.replace(/'/g, "\\'");
 }
+

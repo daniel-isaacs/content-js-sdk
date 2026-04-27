@@ -1,15 +1,12 @@
 import { describe, expect, test } from 'vitest';
-import {
-  createFragment,
-  createSingleContentQuery,
-  createMultipleContentQuery,
-} from '../createQuery.js';
+import { createFragment, createSingleContentQuery, createMultipleContentQuery } from '../createQuery.js';
 import { contentType, initContentTypeRegistry } from '../../model/index.js';
 
 describe('createFragment() with damEnabled for contentReference properties', () => {
   test('damEnabled = false should not include ContentReferenceItem fragment', async () => {
     const ct1 = contentType({
       key: 'ct1',
+      displayName: 'CT1',
       baseType: '_page',
       properties: {
         image: { type: 'contentReference' },
@@ -24,18 +21,10 @@ describe('createFragment() with damEnabled for contentReference properties', () 
     });
 
     // Should not include ContentReferenceItem fragments
-    expect(result.some((line) => line.includes('PublicImageAsset'))).toBe(
-      false,
-    );
-    expect(result.some((line) => line.includes('PublicVideoAsset'))).toBe(
-      false,
-    );
-    expect(result.some((line) => line.includes('PublicRawFileAsset'))).toBe(
-      false,
-    );
-    expect(result.some((line) => line.includes('ContentReferenceItem'))).toBe(
-      false,
-    );
+    expect(result.some(line => line.includes('PublicImageAsset'))).toBe(false);
+    expect(result.some(line => line.includes('PublicVideoAsset'))).toBe(false);
+    expect(result.some(line => line.includes('PublicRawFileAsset'))).toBe(false);
+    expect(result.some(line => line.includes('ContentReferenceItem'))).toBe(false);
 
     // Should only include key and url (no ...ContentReferenceItem)
     expect(result).toMatchInlineSnapshot(`
@@ -54,6 +43,7 @@ describe('createFragment() with damEnabled for contentReference properties', () 
   test('damEnabled = true should include ContentReferenceItem fragment', async () => {
     const ct1 = contentType({
       key: 'ct1',
+      displayName: 'CT1',
       baseType: '_page',
       properties: {
         image: { type: 'contentReference' },
@@ -68,14 +58,10 @@ describe('createFragment() with damEnabled for contentReference properties', () 
     });
 
     // Should include all ContentReferenceItem fragments
-    expect(result.some((line) => line.includes('PublicImageAsset'))).toBe(true);
-    expect(result.some((line) => line.includes('PublicVideoAsset'))).toBe(true);
-    expect(result.some((line) => line.includes('PublicRawFileAsset'))).toBe(
-      true,
-    );
-    expect(result.some((line) => line.includes('ContentReferenceItem'))).toBe(
-      true,
-    );
+    expect(result.some(line => line.includes('PublicImageAsset'))).toBe(true);
+    expect(result.some(line => line.includes('PublicVideoAsset'))).toBe(true);
+    expect(result.some(line => line.includes('PublicRawFileAsset'))).toBe(true);
+    expect(result.some(line => line.includes('ContentReferenceItem'))).toBe(true);
 
     expect(result).toMatchInlineSnapshot(`
       [
@@ -97,6 +83,7 @@ describe('createFragment() with damEnabled for contentReference properties', () 
   test('damEnabled = false with array of contentReference', async () => {
     const ct1 = contentType({
       key: 'ct1',
+      displayName: 'CT1',
       baseType: '_page',
       properties: {
         images: { type: 'array', items: { type: 'contentReference' } },
@@ -110,9 +97,7 @@ describe('createFragment() with damEnabled for contentReference properties', () 
       includeBaseFragments: true,
     });
 
-    expect(result.some((line) => line.includes('ContentReferenceItem'))).toBe(
-      false,
-    );
+    expect(result.some(line => line.includes('ContentReferenceItem'))).toBe(false);
     expect(result).toMatchInlineSnapshot(`
       [
         "fragment MediaMetadata on MediaMetadata { mimeType thumbnail content }",
@@ -129,6 +114,7 @@ describe('createFragment() with damEnabled for contentReference properties', () 
   test('damEnabled = true with array of contentReference', async () => {
     const ct1 = contentType({
       key: 'ct1',
+      displayName: 'CT1',
       baseType: '_page',
       properties: {
         images: { type: 'array', items: { type: 'contentReference' } },
@@ -141,9 +127,7 @@ describe('createFragment() with damEnabled for contentReference properties', () 
       includeBaseFragments: true,
     });
 
-    expect(result.some((line) => line.includes('ContentReferenceItem'))).toBe(
-      true,
-    );
+    expect(result.some(line => line.includes('ContentReferenceItem'))).toBe(true);
     expect(result).toMatchInlineSnapshot(`
       [
         "fragment PublicImageAsset on cmp_PublicImageAsset { Url Title AltText Description MimeType Height Width Renditions { Id Name Url Width Height } FocalPoint { X Y } Tags { Guid Name } }",
@@ -164,6 +148,7 @@ describe('createFragment() with damEnabled for contentReference properties', () 
   test('damEnabled with nested component containing contentReference', async () => {
     const ctBlock = contentType({
       key: 'ctBlock',
+      displayName: 'CTBlock',
       baseType: '_component',
       properties: {
         image: { type: 'contentReference' },
@@ -171,6 +156,7 @@ describe('createFragment() with damEnabled for contentReference properties', () 
     });
     const ct1 = contentType({
       key: 'ct1',
+      displayName: 'CT1',
       baseType: '_page',
       properties: {
         block: { type: 'component', contentType: ctBlock },
@@ -183,18 +169,14 @@ describe('createFragment() with damEnabled for contentReference properties', () 
       damEnabled: false,
       includeBaseFragments: true,
     });
-    expect(
-      resultDisabled.some((line) => line.includes('ContentReferenceItem')),
-    ).toBe(false);
+    expect(resultDisabled.some(line => line.includes('ContentReferenceItem'))).toBe(false);
 
     // Test with damEnabled = true
     const resultEnabled = await createFragment('ct1', new Set(), '', {
       damEnabled: true,
       includeBaseFragments: true,
     });
-    expect(
-      resultEnabled.some((line) => line.includes('ContentReferenceItem')),
-    ).toBe(true);
+    expect(resultEnabled.some(line => line.includes('ContentReferenceItem'))).toBe(true);
     expect(resultEnabled).toMatchInlineSnapshot(`
       [
         "fragment MediaMetadata on MediaMetadata { mimeType thumbnail content }",
@@ -216,6 +198,7 @@ describe('createFragment() with damEnabled for contentReference properties', () 
   test('damEnabled with content property containing contentReference', async () => {
     const ctRef = contentType({
       key: 'ctRef',
+      displayName: 'CTRef',
       baseType: '_component',
       properties: {
         image: { type: 'contentReference' },
@@ -223,6 +206,7 @@ describe('createFragment() with damEnabled for contentReference properties', () 
     });
     const ct1 = contentType({
       key: 'ct1',
+      displayName: 'CT1',
       baseType: '_page',
       properties: {
         content: { type: 'content', allowedTypes: [ctRef] },
@@ -235,9 +219,7 @@ describe('createFragment() with damEnabled for contentReference properties', () 
       damEnabled: true,
       includeBaseFragments: true,
     });
-    expect(result.some((line) => line.includes('ContentReferenceItem'))).toBe(
-      true,
-    );
+    expect(result.some(line => line.includes('ContentReferenceItem'))).toBe(true);
     expect(result).toMatchInlineSnapshot(`
       [
         "fragment MediaMetadata on MediaMetadata { mimeType thumbnail content }",
@@ -259,6 +241,7 @@ describe('createFragment() with damEnabled for contentReference properties', () 
   test('damEnabled = true but NO contentReference properties should NOT include DAM fragments', async () => {
     const ct1 = contentType({
       key: 'ct1',
+      displayName: 'CT1',
       baseType: '_page',
       properties: {
         title: { type: 'string' },
@@ -275,18 +258,10 @@ describe('createFragment() with damEnabled for contentReference properties', () 
     });
 
     // Should NOT include DAM fragments
-    expect(result.some((line) => line.includes('PublicImageAsset'))).toBe(
-      false,
-    );
-    expect(result.some((line) => line.includes('PublicVideoAsset'))).toBe(
-      false,
-    );
-    expect(result.some((line) => line.includes('PublicRawFileAsset'))).toBe(
-      false,
-    );
-    expect(result.some((line) => line.includes('ContentReferenceItem'))).toBe(
-      false,
-    );
+    expect(result.some(line => line.includes('PublicImageAsset'))).toBe(false);
+    expect(result.some(line => line.includes('PublicVideoAsset'))).toBe(false);
+    expect(result.some(line => line.includes('PublicRawFileAsset'))).toBe(false);
+    expect(result.some(line => line.includes('ContentReferenceItem'))).toBe(false);
 
     expect(result).toMatchInlineSnapshot(`
       [
@@ -304,6 +279,7 @@ describe('createFragment() with damEnabled for contentReference properties', () 
   test('damEnabled = true with nested content without contentReference should NOT include DAM fragments', async () => {
     const ctBlock = contentType({
       key: 'ctBlock',
+      displayName: 'CTBlock',
       baseType: '_component',
       properties: {
         text: { type: 'string' },
@@ -311,6 +287,7 @@ describe('createFragment() with damEnabled for contentReference properties', () 
     });
     const ct1 = contentType({
       key: 'ct1',
+      displayName: 'CT1',
       baseType: '_page',
       properties: {
         block: { type: 'component', contentType: ctBlock },
@@ -324,12 +301,8 @@ describe('createFragment() with damEnabled for contentReference properties', () 
     });
 
     // Should NOT include DAM fragments since no contentReference anywhere
-    expect(result.some((line) => line.includes('ContentReferenceItem'))).toBe(
-      false,
-    );
-    expect(result.some((line) => line.includes('PublicImageAsset'))).toBe(
-      false,
-    );
+    expect(result.some(line => line.includes('ContentReferenceItem'))).toBe(false);
+    expect(result.some(line => line.includes('PublicImageAsset'))).toBe(false);
   });
 });
 
@@ -337,6 +310,7 @@ describe('createSingleContentQuery() with damEnabled', () => {
   test('createSingleContentQuery: damEnabled = false should not include DAM fragments', async () => {
     const ct1 = contentType({
       key: 'ct1',
+      displayName: 'CT1',
       baseType: '_page',
       properties: {
         image: { type: 'contentReference' },
@@ -354,6 +328,7 @@ describe('createSingleContentQuery() with damEnabled', () => {
   test('createSingleContentQuery: damEnabled = true should include DAM fragments', async () => {
     const ct1 = contentType({
       key: 'ct1',
+      displayName: 'CT1',
       baseType: '_page',
       properties: {
         image: { type: 'contentReference' },
@@ -367,9 +342,7 @@ describe('createSingleContentQuery() with damEnabled', () => {
     expect(query.includes('PublicVideoAsset')).toBe(true);
     expect(query.includes('PublicRawFileAsset')).toBe(true);
     expect(query.includes('ContentReferenceItem')).toBe(true);
-    expect(query).toContain(
-      'image { key url { ...ContentUrl } ...ContentReferenceItem }',
-    );
+    expect(query).toContain('image { key url { ...ContentUrl } ...ContentReferenceItem }');
   });
 });
 
@@ -377,6 +350,7 @@ describe('createMultipleContentQuery() with damEnabled', () => {
   test('createMultipleContentQuery: damEnabled = false should not include DAM fragments', async () => {
     const ct1 = contentType({
       key: 'ct1',
+      displayName: 'CT1',
       baseType: '_page',
       properties: {
         image: { type: 'contentReference' },
@@ -393,6 +367,7 @@ describe('createMultipleContentQuery() with damEnabled', () => {
   test('createMultipleContentQuery: damEnabled = true should include DAM fragments', async () => {
     const ct1 = contentType({
       key: 'ct1',
+      displayName: 'CT1',
       baseType: '_page',
       properties: {
         image: { type: 'contentReference' },

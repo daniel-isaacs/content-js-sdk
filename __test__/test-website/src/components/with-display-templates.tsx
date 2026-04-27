@@ -1,9 +1,4 @@
-import {
-  BlankSectionContentType,
-  contentType,
-  displayTemplate,
-  ContentProps,
-} from '@optimizely/cms-sdk';
+import { BlankSectionContentType, contentType, displayTemplate, ContentProps } from '@optimizely/cms-sdk';
 import {
   OptimizelyComposition,
   OptimizelyGridSection,
@@ -12,6 +7,7 @@ import {
 
 export const ct1 = contentType({
   key: 'test_c1',
+  displayName: 'Test C1',
   baseType: '_component',
   properties: {
     p1: { type: 'string' },
@@ -21,6 +17,7 @@ export const ct1 = contentType({
 
 export const ct2 = contentType({
   key: 'test_c2',
+  displayName: 'Test C2',
   baseType: '_component',
   properties: {
     p2: { type: 'float' },
@@ -30,17 +27,20 @@ export const ct2 = contentType({
 
 export const ct3 = contentType({
   key: 'test_c3',
+  displayName: 'Test C3',
   baseType: '_experience',
 });
 
 export const ct6 = contentType({
   key: 'test_c6',
+  displayName: 'Test C6',
   baseType: '_component',
   compositionBehaviors: ['elementEnabled', 'sectionEnabled'],
 });
 
 export const ct7 = contentType({
   key: 'test_c7',
+  displayName: 'Test C7',
   baseType: '_component',
   compositionBehaviors: ['elementEnabled', 'sectionEnabled'],
 });
@@ -221,11 +221,7 @@ export function BlankSection2({ content }: BlankSectionProps) {
   return (
     <>
       <h2>This is BlankSection2 {content.key}</h2>
-      <OptimizelyGridSection
-        nodes={content.nodes}
-        row={Row2}
-        column={Column2}
-      />
+      <OptimizelyGridSection nodes={content.nodes} row={Row2} column={Column2} />
     </>
   );
 }

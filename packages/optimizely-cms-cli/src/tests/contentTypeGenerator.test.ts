@@ -1,9 +1,5 @@
 import { afterAll, beforeAll, describe, expect, it } from 'vitest';
-import {
-  generateContentTypeFiles,
-  generateContentTypeCode,
-  cleanKey,
-} from '../generators/contentTypeGenerator.js';
+import { generateContentTypeFiles, generateContentTypeCode, cleanKey } from '../generators/contentTypeGenerator.js';
 import { ContentType } from '../generators/manifest.js';
 import fs from 'fs/promises';
 import path from 'path';
@@ -32,11 +28,7 @@ describe('generateContentTypeFiles', () => {
   });
 
   it('should generate a file for each content type', async () => {
-    const files = await generateContentTypeFiles(
-      contentTypes,
-      displayTemplatesByContentType,
-      outputDir,
-    );
+    const files = await generateContentTypeFiles(contentTypes, displayTemplatesByContentType, outputDir);
     expect(files).toHaveLength(1);
     const filePath = path.join(outputDir, files[0]);
     const content = await fs.readFile(filePath, 'utf-8');
@@ -55,14 +47,8 @@ describe('generateContentTypeFiles', () => {
     ];
 
     await expect(
-      generateContentTypeFiles(
-        invalidContentTypes,
-        displayTemplatesByContentType,
-        outputDir,
-      ),
-    ).rejects.toThrow(
-      'Invalid key "***": must contain at least one alphanumeric character',
-    );
+      generateContentTypeFiles(invalidContentTypes, displayTemplatesByContentType, outputDir),
+    ).rejects.toThrow('Invalid key "***": must contain at least one alphanumeric character');
   });
 });
 
@@ -91,15 +77,11 @@ describe('cleanKey', () => {
   });
 
   it('should throw error for keys with no alphanumeric characters', () => {
-    expect(() => cleanKey('***')).toThrow(
-      'Invalid key "***": must contain at least one alphanumeric character'
-    );
+    expect(() => cleanKey('***')).toThrow('Invalid key "***": must contain at least one alphanumeric character');
   });
 
   it('should throw error for keys with only special characters (no alphanumeric)', () => {
-    expect(() => cleanKey('---___')).toThrow(
-      'Invalid key "---___": must contain at least one alphanumeric character'
-    );
+    expect(() => cleanKey('---___')).toThrow('Invalid key "---___": must contain at least one alphanumeric character');
   });
 
   it('should preserve case sensitivity', () => {
@@ -164,6 +146,7 @@ describe('generateContentTypeCode', () => {
       const contentType: ContentType = {
         key: 'EnumTest',
         baseType: '_component',
+        displayName: 'Enum Test',
         properties: {
           theme: {
             type: 'string',
@@ -183,6 +166,7 @@ describe('generateContentTypeCode', () => {
       const contentType: ContentType = {
         key: 'EnumTest',
         baseType: '_component',
+        displayName: 'Enum Test',
         properties: {
           theme: {
             type: 'string',
@@ -204,6 +188,7 @@ describe('generateContentTypeCode', () => {
       const contentType: ContentType = {
         key: 'EnumTest',
         baseType: '_component',
+        displayName: 'Enum Test',
         properties: {
           theme: {
             type: 'string',
@@ -225,6 +210,7 @@ describe('generateContentTypeCode', () => {
       const contentType: ContentType = {
         key: 'EnumTest',
         baseType: '_component',
+        displayName: 'Enum Test',
         properties: {
           priority: {
             type: 'integer',
@@ -246,6 +232,7 @@ describe('generateContentTypeCode', () => {
       const contentType: ContentType = {
         key: 'EnumTest',
         baseType: '_component',
+        displayName: 'Enum Test',
         properties: {
           priority: {
             type: 'integer',
@@ -269,6 +256,7 @@ describe('generateContentTypeCode', () => {
       const contentType: ContentType = {
         key: 'EnumTest',
         baseType: '_component',
+        displayName: 'Enum Test',
         properties: {
           priority: {
             type: 'integer',
@@ -292,6 +280,7 @@ describe('generateContentTypeCode', () => {
       const contentType: ContentType = {
         key: 'EnumTest',
         baseType: '_component',
+        displayName: 'Enum Test',
         properties: {
           rating: {
             type: 'float',
@@ -309,6 +298,68 @@ describe('generateContentTypeCode', () => {
       expect(code).toContain("{ value: 1.5, displayName: 'Low' }");
       expect(code).toContain("{ value: 2.5, displayName: 'Medium' }");
       expect(code).toContain("{ value: 3.5, displayName: 'High' }");
+    });
+  });
+
+  describe('array properties', () => {
+    it('should generate array with all metadata properties', () => {
+      const contentType: ContentType = {
+        key: 'ArrayTest',
+        baseType: '_component',
+        displayName: 'Array Test',
+        properties: {
+          p_string_list: {
+            type: 'array',
+            displayName: 'p_string_list testing',
+            isLocalized: true,
+            isRequired: false,
+            group: 'Content',
+            sortOrder: 0,
+            minItems: 5,
+            maxItems: 100,
+            items: {
+              type: 'string',
+              format: 'shortString',
+              maxLength: 100,
+              pattern: '^p$*',
+            },
+          },
+        },
+      };
+      const code = generateContentTypeCode(contentType);
+      expect(code).toContain("type: 'array'");
+      expect(code).toContain("displayName: 'p_string_list testing'");
+      expect(code).toContain('isLocalized: true');
+      expect(code).toContain("group: 'Content'");
+      expect(code).toContain('sortOrder: 0');
+      expect(code).toContain('minItems: 5');
+      expect(code).toContain('maxItems: 100');
+      expect(code).toContain("format: 'shortString'");
+      expect(code).toContain('maxLength: 100');
+      expect(code).toContain("pattern: '^p$*'");
+    });
+
+    it('should handle simple array without metadata', () => {
+      const contentType: ContentType = {
+        key: 'SimpleArray',
+        baseType: '_component',
+        displayName: 'Simple Array',
+        properties: {
+          tags: {
+            type: 'array',
+            items: {
+              type: 'string',
+            },
+          },
+        },
+      };
+      const code = generateContentTypeCode(contentType);
+      expect(code).toContain("type: 'array'");
+      expect(code).toContain("type: 'string'");
+      // Should not include optional properties
+      expect(code).toContain('displayName:');
+      expect(code).not.toContain('minItems:');
+      expect(code).not.toContain('maxItems:');
     });
   });
 
@@ -332,11 +383,7 @@ describe('generateContentTypeCode', () => {
         },
       };
 
-      const code = generateContentTypeCode(
-        productContentType,
-        contentTypeToGroupMap,
-        'experience',
-      );
+      const code = generateContentTypeCode(productContentType, contentTypeToGroupMap, 'experience');
 
       // Should import from ../component/SEO.js, not ./SEO.js
       expect(code).toContain("import { SEOCT } from '../component/SEO.js';");
@@ -362,11 +409,7 @@ describe('generateContentTypeCode', () => {
         },
       };
 
-      const code = generateContentTypeCode(
-        heroContentType,
-        contentTypeToGroupMap,
-        'component',
-      );
+      const code = generateContentTypeCode(heroContentType, contentTypeToGroupMap, 'component');
 
       // Should import from ./Button.js for same group
       expect(code).toContain("import { ButtonCT } from './Button.js';");
@@ -377,6 +420,7 @@ describe('generateContentTypeCode', () => {
       const contentType: ContentType = {
         key: 'Product',
         baseType: '_experience',
+        displayName: 'Product',
         properties: {
           seo_properties: {
             type: 'component',

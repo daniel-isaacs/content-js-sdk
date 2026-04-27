@@ -1,10 +1,6 @@
 import type { Metadata } from 'next';
 import { Geist, Geist_Mono } from 'next/font/google';
-import {
-  BlankExperienceContentType,
-  initContentTypeRegistry,
-  config,
-} from '@optimizely/cms-sdk';
+import { BlankExperienceContentType, initContentTypeRegistry, config } from '@optimizely/cms-sdk';
 import { initReactComponentRegistry } from '@optimizely/cms-sdk/react/server';
 
 import './globals.css';
@@ -38,7 +34,7 @@ export const metadata: Metadata = {
 
 // Configure Optimizely Graph client
 config({
-  key: process.env.OPTIMIZELY_GRAPH_SINGLE_KEY!,
+  apiKey: process.env.OPTIMIZELY_GRAPH_SINGLE_KEY!,
   graphUrl: process.env.OPTIMIZELY_GRAPH_GATEWAY,
 });
 
@@ -79,12 +75,8 @@ export default async function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en">
-      <body
-        className={`${geistSans.variable} ${geistMono.variable} antialiased`}
-      >
-        {children}
-      </body>
+    <html lang='en'>
+      <body className={`${geistSans.variable} ${geistMono.variable} antialiased`}>{children}</body>
     </html>
   );
 }

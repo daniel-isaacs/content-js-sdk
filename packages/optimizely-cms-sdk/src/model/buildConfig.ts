@@ -11,9 +11,9 @@ export type BuildConfig = {
 
 // Built-in/default property groups that all users get
 export type BuiltInPropertyGroups =
-  | 'Information'
+  | 'Content'
   | 'Scheduling'
-  | 'Advanced'
+  | 'Settings'
   | 'Shortcut'
   | 'Categories'
   | 'DynamicBlocks';
@@ -24,7 +24,4 @@ export interface PropertyGroupRegistry {
 }
 
 // Type that combines built-in groups, registered custom groups
-export type PropertyGroupKey =
-  | BuiltInPropertyGroups
-  | keyof PropertyGroupRegistry
-  | (string & {});
+export type PropertyGroupKey = BuiltInPropertyGroups | keyof PropertyGroupRegistry | (string & {});
