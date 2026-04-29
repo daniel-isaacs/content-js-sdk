@@ -1,6 +1,7 @@
 import { GraphClient, type PreviewParams } from '@optimizely/cms-sdk';
 import { OptimizelyComponent } from '@optimizely/cms-sdk/react/server';
 import { PreviewComponent } from '@optimizely/cms-sdk/react/client';
+import { withAppContext } from '@optimizely/cms-sdk/react/server';
 import { getGraphGatewayUrl } from '@/lib/config';
 import PreviewError from '@/components/layout/PreviewError';
 import Script from 'next/script';
@@ -10,7 +11,7 @@ type Props = {
   searchParams: Promise<{ [key: string]: string | string[] | undefined }>;
 };
 
-export default async function Page({ searchParams }: Props) {
+async function Page({ searchParams }: Props) {
   const params = await searchParams;
   const client = new GraphClient(process.env.OPTIMIZELY_GRAPH_SINGLE_KEY!, {
     graphUrl: getGraphGatewayUrl(),
@@ -55,3 +56,5 @@ export default async function Page({ searchParams }: Props) {
     </div>
   );
 }
+
+export default withAppContext(Page);
