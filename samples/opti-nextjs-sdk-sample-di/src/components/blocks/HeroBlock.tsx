@@ -1,7 +1,7 @@
 import { ContentProps, damAssets } from '@optimizely/cms-sdk';
 import { getPreviewUtils } from '@optimizely/cms-sdk/react/server';
 import { HeroBlockCT } from '@/content-types/component/HeroBlock';
-import { HeroBlockDisplayTemplateDT } from '@/content-types/displayTemplates/HeroBlockDisplayTemplate';
+import { HeroBlockDisplayTemplateDT } from '@/content-types/component/HeroBlock';
 import Image from 'next/image';
 
 type Props = {

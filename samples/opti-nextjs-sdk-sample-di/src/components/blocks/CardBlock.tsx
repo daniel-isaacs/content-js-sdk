@@ -2,7 +2,7 @@ import { ContentProps, damAssets } from '@optimizely/cms-sdk';
 import { RichText } from '@optimizely/cms-sdk/react/richText';
 import { getPreviewUtils } from '@optimizely/cms-sdk/react/server';
 import { CardBlockCT } from '@/content-types/component/CardBlock';
-import { CardBlockDisplayTemplateDT } from '@/content-types/displayTemplates/CardBlockDisplayTemplate';
+import { CardBlockDisplayTemplateDT } from '@/content-types/component/CardBlock';
 import Image from 'next/image';
 
 type Props = {
