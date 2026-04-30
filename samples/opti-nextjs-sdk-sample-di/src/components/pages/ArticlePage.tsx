@@ -13,13 +13,14 @@ export default function ArticlePage({ content }: Props) {
   const { getAlt } = damAssets(content);
 
   return (
-    <article className="max-w-4xl mx-auto px-4 py-8">
+    <article className="max-w-4xl mx-auto px-4 sm:px-6 py-10 md:py-16">
       {src(content.featuredImage) && (
-        <div className="relative w-full h-64 md:h-96 mb-8 rounded-lg overflow-hidden">
+        <div className="relative w-full h-64 md:h-112 mb-10 rounded-xl overflow-hidden shadow-md">
           <Image
             src={src(content.featuredImage)!}
             alt={getAlt(content.featuredImage, 'Featured image')}
             fill
+            priority
             className="object-cover"
             sizes="(max-width: 768px) 100vw, 896px"
             {...pa('featuredImage')}
@@ -28,12 +29,14 @@ export default function ArticlePage({ content }: Props) {
       )}
 
       <h1
-        className="text-3xl md:text-4xl font-bold text-foreground mb-6"
+        className="text-4xl md:text-5xl font-bold text-foreground leading-tight mb-8"
         {...pa('heading')}
-         data-epi-edit='heading'
+        data-epi-edit='heading'
       >
         {content.heading}
       </h1>
+
+      <hr className="border-border mb-8" />
 
       {content.body && (
         <div className="prose prose-lg max-w-none" {...pa('body')}>

@@ -23,6 +23,7 @@ initReactComponentRegistry({
   resolver: {
     ArticlePage: components.ArticlePage,
     CardBlock: components.CardBlock,
+    HeroBlock: components.HeroBlock,
     RichTextElement: components.RichTextElement,
     TextElement: components.TextElement,
     // ImageElement: components.ImageElement,

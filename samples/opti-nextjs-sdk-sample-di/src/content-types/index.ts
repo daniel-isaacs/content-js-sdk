@@ -1,6 +1,6 @@
 export { ArticlePageCT } from './page/ArticlePage';
 
-export { HeroComponentCT } from './component/HeroComponent';
+export { HeroBlockCT } from './component/HeroBlock';
 
 export { CardBlockCT } from './component/CardBlock';
 export { RichTextElementCT } from './component/RichTextElement';

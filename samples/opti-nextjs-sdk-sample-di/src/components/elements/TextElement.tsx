@@ -52,7 +52,7 @@ export default function TextElement({ content, displaySettings }: Props) {
     case 'h4':
       return (
         <h4
-          className={`text-xl font-semibold text-muted-foreground ${baseClasses}`}
+          className={`text-xl font-semibold text-foreground ${baseClasses}`}
           {...pa('text')}
         >
           {content.text}
@@ -61,7 +61,7 @@ export default function TextElement({ content, displaySettings }: Props) {
     case 'h5':
       return (
         <h5
-          className={`text-lg font-medium text-muted-foreground ${baseClasses}`}
+          className={`text-lg font-medium text-foreground ${baseClasses}`}
           {...pa('text')}
         >
           {content.text}
@@ -69,7 +69,7 @@ export default function TextElement({ content, displaySettings }: Props) {
       );
     default:
       return (
-        <p className={`text-base text-muted-foreground ${baseClasses}`} {...pa('text')}>
+        <p className={`text-base text-foreground ${baseClasses}`} {...pa('text')}>
           {content.text}
         </p>
       );

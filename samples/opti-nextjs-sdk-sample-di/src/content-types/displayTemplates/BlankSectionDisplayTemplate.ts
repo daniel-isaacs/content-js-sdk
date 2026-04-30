@@ -33,16 +33,16 @@ export const BlankSectionDisplayTemplateDT = displayTemplate({
         editor: 'select',
         sortOrder: 1,
         choices: {
+          medium: {
+            displayName: 'Medium (default)',
+            sortOrder: 0,
+          },
           none: {
             displayName: 'None',
-            sortOrder: 0,
+            sortOrder: 1,
           },
           small: {
             displayName: 'Small',
-            sortOrder: 1,
-          },
-          medium: {
-            displayName: 'Medium (default)',
             sortOrder: 2,
           },
           large: {
@@ -56,16 +56,16 @@ export const BlankSectionDisplayTemplateDT = displayTemplate({
         editor: 'select',
         sortOrder: 2,
         choices: {
+          medium: {
+            displayName: 'Medium (default)',
+            sortOrder: 0,
+          },
           none: {
             displayName: 'None',
-            sortOrder: 0,
+            sortOrder: 1,
           },
           small: {
             displayName: 'Small',
-            sortOrder: 1,
-          },
-          medium: {
-            displayName: 'Medium (default)',
             sortOrder: 2,
           },
           large: {
@@ -79,16 +79,16 @@ export const BlankSectionDisplayTemplateDT = displayTemplate({
         editor: 'select',
         sortOrder: 3,
         choices: {
+          medium: {
+            displayName: 'Medium (default)',
+            sortOrder: 0,
+          },
           none: {
             displayName: 'None',
-            sortOrder: 0,
+            sortOrder: 1,
           },
           small: {
             displayName: 'Small',
-            sortOrder: 1,
-          },
-          medium: {
-            displayName: 'Medium (default)',
             sortOrder: 2,
           },
           large: {
@@ -102,22 +102,32 @@ export const BlankSectionDisplayTemplateDT = displayTemplate({
         editor: 'select',
         sortOrder: 4,
         choices: {
+          medium: {
+            displayName: 'Medium (default)',
+            sortOrder: 0,
+          },
           none: {
             displayName: 'None',
-            sortOrder: 0,
+            sortOrder: 1,
           },
           small: {
             displayName: 'Small',
-            sortOrder: 1,
-          },
-          medium: {
-            displayName: 'Medium (default)',
             sortOrder: 2,
           },
           large: {
             displayName: 'Large',
             sortOrder: 3,
           },
+        },
+      },
+      width: {
+        displayName: 'Width',
+        editor: 'select',
+        sortOrder: 5,
+        choices: {
+          default:    { displayName: 'Default (default)', sortOrder: 0 },
+          full_width: { displayName: 'Full width',        sortOrder: 1 },
+          narrow:     { displayName: 'Narrow',            sortOrder: 2 },
         },
       },
     },
