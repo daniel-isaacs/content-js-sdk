@@ -6,7 +6,9 @@
     "dev": "next dev --experimental-https",
     "build": "next build",
     "start": "next start",
-    "lint": "eslint"
+    "lint": "eslint",
+    "sync": "node scripts/sync-registries.mjs",
+    "scaffold": "node scripts/scaffold-component.mjs"
   },
   "dependencies": {
     "@optimizely/cms-sdk": "file:../../packages/optimizely-cms-sdk",
