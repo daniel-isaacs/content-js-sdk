@@ -125,9 +125,18 @@ export const BlankSectionDisplayTemplateDT = displayTemplate({
         editor: 'select',
         sortOrder: 5,
         choices: {
-          default:    { displayName: 'Default (default)', sortOrder: 0 },
-          full_width: { displayName: 'Full width',        sortOrder: 1 },
-          narrow:     { displayName: 'Narrow',            sortOrder: 2 },
+          default: {
+            displayName: 'Default (default)',
+            sortOrder: 0,
+          },
+          full_width: {
+            displayName: 'Full width',
+            sortOrder: 1,
+          },
+          narrow: {
+            displayName: 'Narrow',
+            sortOrder: 2,
+          },
         },
       },
     },

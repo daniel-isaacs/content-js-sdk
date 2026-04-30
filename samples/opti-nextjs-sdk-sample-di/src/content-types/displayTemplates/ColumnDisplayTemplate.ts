@@ -67,14 +67,38 @@ export const ColumnDisplayTemplateDT = displayTemplate({
         editor: 'select',
         sortOrder: 3,
         choices: {
-          none: { displayName: 'None (default)', sortOrder: 0 },
-          top_only: { displayName: 'Top only', sortOrder: 1 },
-          bottom_only: { displayName: 'Bottom only', sortOrder: 2 },
-          top_and_bottom: { displayName: 'Top and bottom', sortOrder: 3 },
-          start_only: { displayName: 'Start only (left)', sortOrder: 4 },
-          end_only: { displayName: 'End only (right)', sortOrder: 5 },
-          both_sides: { displayName: 'Both sides (left & right)', sortOrder: 6 },
-          all_sides: { displayName: 'All sides', sortOrder: 7 },
+          none: {
+            displayName: 'None (default)',
+            sortOrder: 0,
+          },
+          top_only: {
+            displayName: 'Top only',
+            sortOrder: 1,
+          },
+          bottom_only: {
+            displayName: 'Bottom only',
+            sortOrder: 2,
+          },
+          top_and_bottom: {
+            displayName: 'Top and bottom',
+            sortOrder: 3,
+          },
+          start_only: {
+            displayName: 'Start only (left)',
+            sortOrder: 4,
+          },
+          end_only: {
+            displayName: 'End only (right)',
+            sortOrder: 5,
+          },
+          both_sides: {
+            displayName: 'Both sides (left & right)',
+            sortOrder: 6,
+          },
+          all_sides: {
+            displayName: 'All sides',
+            sortOrder: 7,
+          },
         },
       },
       borderType: {
@@ -82,8 +106,14 @@ export const ColumnDisplayTemplateDT = displayTemplate({
         editor: 'select',
         sortOrder: 4,
         choices: {
-          solid: { displayName: 'Solid (default)', sortOrder: 0 },
-          dashed: { displayName: 'Dashed', sortOrder: 1 },
+          solid: {
+            displayName: 'Solid (default)',
+            sortOrder: 0,
+          },
+          dashed: {
+            displayName: 'Dashed',
+            sortOrder: 1,
+          },
         },
       },
     },
