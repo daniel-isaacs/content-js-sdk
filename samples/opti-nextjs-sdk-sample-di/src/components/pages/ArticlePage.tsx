@@ -36,6 +36,13 @@ export default function ArticlePage({ content }: Props) {
         {content.heading}
       </h1>
 
+      {content.Schema && (
+        <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{ __html: content.Schema }}
+        />
+      )}
+
       <hr className="border-border mb-8" />
 
       {content.body && (

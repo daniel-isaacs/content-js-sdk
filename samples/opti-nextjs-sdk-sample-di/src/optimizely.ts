@@ -32,6 +32,7 @@ initReactComponentRegistry({
     BlankExperience: components.BlankExperience,
     // LandingPageExperience: components.LandingPageExperience,
     BlankSection: components.BlankSection,
+    StandardExperience: components.StandardExperience,
     // ButtonBlock: components.ButtonBlock,
   },
 });

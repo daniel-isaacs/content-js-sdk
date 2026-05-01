@@ -1,4 +1,5 @@
 
+import type { Metadata } from 'next';
 import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
 
@@ -7,6 +8,13 @@ import "@/optimizely";
 
 import SiteHeader from "@/components/layout/SiteHeader";
 import SiteFooter from "@/components/layout/SiteFooter";
+
+export const metadata: Metadata = {
+  title: {
+    default: 'Optimizely CMS Sample Site',
+    template: '%s | Optimizely CMS',
+  },
+};
 
 const geistSans = Geist({
   variable: "--font-geist-sans",

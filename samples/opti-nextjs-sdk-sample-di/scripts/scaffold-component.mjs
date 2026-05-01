@@ -170,8 +170,9 @@ function generateComponent(name, ct, ctGroup) {
 const requested = new Set(process.argv.slice(2));
 
 const GROUPS = [
-  { dir: src('content-types', 'component'), ctGroup: 'component' },
-  { dir: src('content-types', 'page'),      ctGroup: 'page' },
+  { dir: src('content-types', 'component'),  ctGroup: 'component' },
+  { dir: src('content-types', 'page'),       ctGroup: 'page' },
+  { dir: src('content-types', 'experience'), ctGroup: 'experience' },
 ];
 
 const COMPONENT_SUBDIRS = ['blocks', 'elements', 'pages', 'experiences'];
@@ -188,6 +189,7 @@ for (const { dir, ctGroup } of GROUPS) {
     const stem = basename(file, '.ts');
 
     if (requested.size > 0 && !requested.has(stem)) continue;
+    if (/^Base/.test(stem)) continue; // abstract base types — no component
     if (existing.has(stem)) {
       if (requested.has(stem)) console.log(`  skipping ${stem} — component already exists`);
       continue;

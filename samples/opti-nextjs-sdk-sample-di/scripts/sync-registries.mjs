@@ -54,8 +54,9 @@ function findNamedExports(dir, suffix) {
 
 // ── Discover content types ───────────────────────────────────────────────────
 
-const componentCTs = findNamedExports(src('content-types', 'component'), 'CT');
-const pageCTs      = findNamedExports(src('content-types', 'page'),      'CT');
+const componentCTs  = findNamedExports(src('content-types', 'component'),  'CT');
+const pageCTs       = findNamedExports(src('content-types', 'page'),       'CT');
+const experienceCTs = findNamedExports(src('content-types', 'experience'), 'CT');
 
 // Display templates can live co-located in component/ or as standalone files in displayTemplates/
 const componentDTs  = findNamedExports(src('content-types', 'component'),        'DisplayTemplateDT');
@@ -88,6 +89,12 @@ console.log('\nsrc/content-types/index.ts');
   for (const { name, stem } of pageCTs) {
     if (text.includes(`{ ${name} }`)) continue;
     text += `export { ${name} } from './page/${stem}';\n`;
+    console.log(`  + ${name}`);
+    added++;
+  }
+  for (const { name, stem } of experienceCTs) {
+    if (text.includes(`{ ${name} }`)) continue;
+    text += `export { ${name} } from './experience/${stem}';\n`;
     console.log(`  + ${name}`);
     added++;
   }
@@ -151,7 +158,7 @@ console.log('\nsrc/optimizely.ts (resolver)');
   // Only register components that have a corresponding CT defined in code.
   // Components like BlankExperience/BlankSection use SDK-provided types and
   // are registered manually — don't touch them here.
-  const ctStems = new Set([...componentCTs, ...pageCTs].map(ct => ct.stem));
+  const ctStems = new Set([...componentCTs, ...pageCTs, ...experienceCTs].map(ct => ct.stem));
 
   let insertions = '';
   for (const { name } of allComponents) {
