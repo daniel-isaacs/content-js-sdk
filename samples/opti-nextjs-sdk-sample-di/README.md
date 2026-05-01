@@ -57,6 +57,7 @@ src/
 │   └── layout/                 # Site chrome (SiteHeader, SiteFooter, …)
 ├── content-types/
 │   ├── component/              # Content type + display template definitions
+│   ├── experience/             # Experience content type definitions
 │   ├── page/                   # Page content type definitions
 │   └── displayTemplates/       # Display template registry index + standalone templates
 ├── lib/
@@ -102,7 +103,7 @@ src/
    ```bash
    npm run sync
    ```
-   Exports the CT, re-exports the DT, exports the component, and adds it to the resolver.
+   Exports the Content Type, re-exports the Display Template, exports the component, and adds it to the resolver.
 
 6. **Push to the CMS** *(required if you added or changed a display template)*:
    ```bash
