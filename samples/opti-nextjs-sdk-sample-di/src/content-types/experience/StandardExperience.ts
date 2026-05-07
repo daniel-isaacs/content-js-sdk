@@ -10,8 +10,8 @@ export const StandardExperienceCT = contentType({
   baseType: '_experience',
   mayContainTypes: ['*'],
   properties: {
-    metaTitle:       { type: 'string', displayName: 'Meta Title',       isLocalized: true, group: 'SEO', sortOrder: 10, format: 'shortString' },
-    metaDescription: { type: 'string', displayName: 'Meta Description', isLocalized: true, group: 'SEO', sortOrder: 20 },
+    metaTitle:       { type: 'string', displayName: 'Meta Title',       localized: true, group: 'SEO', sortOrder: 10, format: 'shortString' },
+    metaDescription: { type: 'string', displayName: 'Meta Description', localized: true, group: 'SEO', sortOrder: 20 },
     Schema:          { type: 'string', displayName: 'Schema',                            group: 'SEO', sortOrder: 30 },
   },
 });

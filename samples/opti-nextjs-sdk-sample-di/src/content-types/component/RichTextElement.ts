@@ -9,6 +9,6 @@ export const RichTextElementCT = contentType({
   baseType: '_component',
   compositionBehaviors: ['elementEnabled'],
   properties: {
-    content: { type: 'richText', displayName: 'Content', isLocalized: true, group: 'Information', sortOrder: 0 },
+    content: { type: 'richText', displayName: 'Content', localized: true, group: 'Information', sortOrder: 0 },
   },
 });

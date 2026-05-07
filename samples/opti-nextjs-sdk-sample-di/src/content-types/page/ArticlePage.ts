@@ -9,11 +9,11 @@ export const ArticlePageCT = contentType({
   baseType: '_page',
   mayContainTypes: ['*'],
   properties: {
-    featuredImage: { type: 'contentReference', displayName: 'Featured Image', description: 'Image shown on the top of the page', group: 'Information', sortOrder: 0, allowedTypes: ['_image'] },
-    heading: { type: 'string', displayName: 'Article Heading', isLocalized: true, group: 'Information', sortOrder: 11, indexingType: 'searchable', format: 'shortString' },
-    body: { type: 'richText', displayName: 'Article Body', isLocalized: true, group: 'Information', sortOrder: 20, indexingType: 'searchable' },
-    metaTitle: { type: 'string', displayName: 'Meta Title', isLocalized: true, group: 'SEO', sortOrder: 10, format: 'shortString' },
-    metaDescription: { type: 'string', displayName: 'Meta Description', isLocalized: true, group: 'SEO', sortOrder: 20 },
-    Schema: { type: 'string', displayName: 'Schema', group: 'SEO', sortOrder: 30 },
+    featuredImage: { type: 'contentReference', displayName: 'Featured Image', description: 'Image shown on the top of the page', group: 'Information', sortOrder: 10, allowedTypes: ['_image'] },
+    metaTitle: { type: 'string', displayName: 'Meta Title', group: 'seo', sortOrder: 10, format: 'shortString' },
+    heading: { type: 'string', displayName: 'Article Heading', localized: true, group: 'Information', sortOrder: 20, indexingType: 'searchable', format: 'shortString' },
+    metaDescription: { type: 'string', displayName: 'Meta Description', group: 'seo', sortOrder: 20 },
+    body: { type: 'richText', displayName: 'Article Body', localized: true, group: 'Information', sortOrder: 30, indexingType: 'searchable' },
+    Schema: { type: 'string', displayName: 'Schema', group: 'seo', sortOrder: 30 },
   },
 });
