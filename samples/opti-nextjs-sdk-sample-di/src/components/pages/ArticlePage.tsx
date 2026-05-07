@@ -31,7 +31,6 @@ export default function ArticlePage({ content }: Props) {
       <h1
         className="text-4xl md:text-5xl font-bold text-foreground leading-tight mb-8"
         {...pa('heading')}
-        data-epi-edit='heading'
       >
         {content.heading}
       </h1>

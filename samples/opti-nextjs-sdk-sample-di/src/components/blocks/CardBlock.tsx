@@ -58,7 +58,7 @@ export default function CardBlock({ content, displaySettings }: Props) {
             className="inline-flex items-center text-accent hover:text-accent/80 font-medium mt-auto"
             {...pa('linkUrl')}
           >
-            {content.linkText}
+            <span {...pa('linkText')}>{content.linkText}</span>
             <svg
               className="ml-2 w-4 h-4"
               fill="none"

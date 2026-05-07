@@ -287,7 +287,7 @@ The script is **additive only** — it never removes entries.
 
 | File | What it adds |
 |---|---|
-| `src/content-types/index.ts` | `export { MyBlockCT }` for each new `*CT` found in `component/` or `page/` |
+| `src/content-types/index.ts` | `export { MyBlockCT }` for each new `*CT` found in `component/`, `page/`, or `experience/` |
 | `src/content-types/displayTemplates/index.ts` | Re-export for each new `*DisplayTemplateDT` found co-located in `component/` or as a standalone file in `displayTemplates/` |
 | `src/components/index.ts` | `export { default as MyBlock }` for each new `.tsx` found in `blocks/`, `elements/`, `pages/`, or `experiences/` |
 | `src/optimizely.ts` | `MyBlock: components.MyBlock` resolver entry for each component that has a matching CT file |
