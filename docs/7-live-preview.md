@@ -40,7 +40,9 @@ export async function Page({ searchParams }: Props) {
   return (
     <>
       <Script
-        src={`${process.env.OPTIMIZELY_CMS_URL}/util/javascript/communicationinjector.js`}
+        src={
+          new URL('/util/javascript/communicationinjector.js', process.env.OPTIMIZELY_CMS_URL).href
+        }
       ></Script>
       <PreviewComponent />
       <OptimizelyComponent content={response} />
@@ -101,8 +103,10 @@ The `getPreviewContent` method handles all the complexity of fetching the right 
 return (
   <>
     <Script
-      src={`${process.env.OPTIMIZELY_CMS_URL}/util/javascript/communicationinjector.js`}
-    ></Script>
+        src={
+          new URL('/util/javascript/communicationinjector.js', process.env.OPTIMIZELY_CMS_URL).href
+        }
+      ></Script>
     <PreviewComponent />
     <OptimizelyComponent content={response} />
   </>
@@ -116,6 +120,31 @@ Three key components work together here:
 2. **`<PreviewComponent/>`** - A client component that handles the real-time preview updates. When an editor makes changes in the CMS, this component receives those updates and triggers a re-render.
 
 3. **`<OptimizelyComponent/>`** - Renders the actual content using the component you've registered for that content type.
+
+> [!TIP]
+> For Next.js projects, use `NextPreviewComponent` for optimized preview experience. See [Next.js Optimized Preview](#nextjs-optimized-preview-recommended) below.
+
+### Next.js Optimized Preview (Recommended)
+
+For Next.js projects, use `NextPreviewComponent` instead of `PreviewComponent` for smooth preview experience:
+
+```tsx
+import { NextPreviewComponent } from '@optimizely/cms-sdk/next';
+
+return (
+  <>
+    <Script
+        src={
+          new URL('/util/javascript/communicationinjector.js', process.env.OPTIMIZELY_CMS_URL).href
+        }
+      ></Script>
+    <NextPreviewComponent />
+    <OptimizelyComponent content={response} />
+  </>
+);
+```
+
+`NextPreviewComponent` provides optimized content refresh for Next.js applications, enabling seamless preview updates without full page reloads.
 
 ## Step 2. Configure Environment Variables
 

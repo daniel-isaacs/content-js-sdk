@@ -21,6 +21,11 @@
       "import": "./dist/esm/react/client.js",
       "require": "./dist/cjs/react/client.js"
     },
+    "./react/nextjs": {
+      "types": "./dist/cjs/react/nextjs.d.ts",
+      "import": "./dist/esm/react/nextjs.js",
+      "require": "./dist/cjs/react/nextjs.js"
+    },
     "./react/richText": {
       "types": "./dist/cjs/react/richText/index.d.ts",
       "import": "./dist/esm/react/richText/index.js",
@@ -29,12 +34,18 @@
     "./buildConfig": {
       "types": "./dist/cjs/model/buildConfig.d.ts",
       "import": "./dist/esm/model/buildConfig.js"
+    },
+    "./telemetry": {
+      "types": "./dist/cjs/telemetry/index.d.ts",
+      "import": "./dist/esm/telemetry/index.js",
+      "require": "./dist/cjs/telemetry/index.js"
     }
   },
   "repository": {
     "url": "https://github.com/episerver/content-js-sdk.git"
   },
   "scripts": {
+    "prebuild": "node scripts/prebuild.js",
     "build": "tsc --project tsconfig.cjs.json && tsc --project tsconfig.esm.json",
     "clean": "rimraf dist",
     "test": "vitest --typecheck"
@@ -47,12 +58,19 @@
   "license": "Apache-2.0",
   "packageManager": "pnpm@10.7.0",
   "peerDependencies": {
+    "next": ">=14.0.0",
     "react": ">=19.0.0"
   },
   "peerDependenciesMeta": {
+    "next": {
+      "optional": true
+    },
     "react": {
       "optional": true
     }
+  },
+  "dependencies": {
+    "@opentelemetry/api": "^1.9.0"
   },
   "devDependencies": {
     "@testing-library/jest-dom": "^6.9.1",
