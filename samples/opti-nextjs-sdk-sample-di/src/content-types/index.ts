@@ -5,5 +5,6 @@ export { ArticlePageCT } from './page/ArticlePage';
 export { HeroBlockCT } from './component/HeroBlock';
 
 export { CardBlockCT } from './component/CardBlock';
+export { SideNavBlockCT } from './component/SideNavBlock';
 export { RichTextElementCT } from './component/RichTextElement';
 export { TextElementCT } from './component/TextElement';
