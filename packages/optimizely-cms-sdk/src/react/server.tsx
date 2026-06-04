@@ -100,6 +100,8 @@ type OptimizelyContent = {
 
   __composition?: ExperienceCompositionNode;
 
+  composition?: ExperienceCompositionNode;
+
   /** metadata */
   _metadata?: {
     types?: string[];
@@ -124,6 +126,7 @@ type OptimizelyComponentProps = {
 function getDisplayTemplateKey(content: OptimizelyContent): string | null | undefined {
   return (
     content._metadata?.displayOption ??
+    content.composition?.displayTemplateKey ??
     content.__composition?.displayTemplateKey ??
     content.displayTemplateKey
   );
@@ -255,6 +258,7 @@ export function OptimizelyComposition({
               ...node.component,
               __tag: tag,
             }}
+            displaySettings={parsedDisplaySettings}
           />
         </Wrapper>
       );

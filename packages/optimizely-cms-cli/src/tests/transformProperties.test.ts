@@ -1,10 +1,17 @@
 import { describe, it, expect } from 'vitest';
 import { transformProperties } from '../utils/mapping.js';
-import { HeroComponentType, AboutExperienceType, BannerComponentType } from './fixtures.js';
+import {
+  HeroComponentType,
+  AboutExperienceType,
+  BannerComponentType,
+} from './fixtures.js';
 
 describe('Testing transformProperties', () => {
   it('should transform heading property correctly', () => {
-    const result = transformProperties(HeroComponentType.properties, HeroComponentType.key);
+    const result = transformProperties(
+      HeroComponentType.properties,
+      HeroComponentType.key,
+    );
     expect(result).toMatchInlineSnapshot(`
       {
         "background": {
@@ -37,7 +44,10 @@ describe('Testing transformProperties', () => {
   });
 
   it('should transform AboutExperienceType properties correctly', () => {
-    const result = transformProperties(AboutExperienceType.properties, AboutExperienceType.key);
+    const result = transformProperties(
+      AboutExperienceType.properties,
+      AboutExperienceType.key,
+    );
     expect(result).toMatchInlineSnapshot(`
       {
         "section": {
@@ -60,7 +70,10 @@ describe('Testing transformProperties', () => {
   });
 
   it('should transform BannerComponentType properties correctly', () => {
-    const result = transformProperties(BannerComponentType.properties, BannerComponentType.key);
+    const result = transformProperties(
+      BannerComponentType.properties,
+      BannerComponentType.key,
+    );
     expect(result).toMatchInlineSnapshot(`
       {
         "submit": {
@@ -71,6 +84,48 @@ describe('Testing transformProperties', () => {
         },
         "title": {
           "type": "string",
+        },
+      }
+    `);
+  });
+
+  it('should pass through string key allowedTypes unchanged', () => {
+    const properties = {
+      relatedContent: {
+        type: 'content' as const,
+        allowedTypes: ['HeroComponent', 'BannerComponent'],
+      },
+    };
+    const result = transformProperties(properties, 'ArticlePage');
+    expect(result).toMatchInlineSnapshot(`
+      {
+        "relatedContent": {
+          "allowedTypes": [
+            "HeroComponent",
+            "BannerComponent",
+          ],
+          "type": "content",
+        },
+      }
+    `);
+  });
+
+  it('should transform mix of ContentType objects and string keys', () => {
+    const properties = {
+      section: {
+        type: 'content' as const,
+        restrictedTypes: [HeroComponentType, 'SomeOtherComponent'] as any[],
+      },
+    };
+    const result = transformProperties(properties, 'TestPage');
+    expect(result).toMatchInlineSnapshot(`
+      {
+        "section": {
+          "restrictedTypes": [
+            "HeroComponent",
+            "SomeOtherComponent",
+          ],
+          "type": "content",
         },
       }
     `);

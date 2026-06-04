@@ -1,4 +1,4 @@
-import { ContentType, ManifestContract } from './manifest.js';
+import { ManifestContentType } from './manifest.js';
 import { extractKeyName } from '../service/utils.js';
 import { isKeyInvalid } from './validate.js';
 import { ContentTypes } from '@optimizely/cms-sdk';
@@ -244,19 +244,15 @@ function mapAllowedRestrictedTypes(updatedValue: any, parentKey: string) {
 }
 
 /**
- * Filters out system-generated and media content types.
- * Removes content types with baseType of _image, _video, _media
- * and content types with key of BlankExperience or BlankSection.
+ * Filters out built-in content types (i.e. BlankExperience and BlankSection).
  *
  * @param contentTypes - Array of content types to filter
  * @returns Filtered array of content types
  */
-export function filterSystemContentTypes(contentTypes: ContentType[]): ContentType[] {
-  return contentTypes.filter(
-    ct =>
-      !['_image', '_video', '_media'].includes(ct.baseType ?? '') &&
-      !['BlankExperience', 'BlankSection'].includes(ct.key),
-  );
+export function filterOutBuiltinTypes(
+  contentTypes: ManifestContentType[],
+): ManifestContentType[] {
+  return contentTypes.filter(ct => !['BlankExperience', 'BlankSection'].includes(ct.key));
 }
 
 /**
@@ -266,7 +262,7 @@ export const contractToManifest = ({
   key,
   displayName,
   properties,
-}: ContentTypes.Contract): ManifestContract => ({
+}: ContentTypes.Contract): ManifestContentType => ({
   key,
   displayName,
   isContract: true,
