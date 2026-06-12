@@ -169,6 +169,76 @@ export const SEOContract = contract({
 });
 ```
 
+## 6. Using Strings Instead of Type References
+
+**Problem:** Using string literals for `contentType`, `allowedTypes`, or `restrictedTypes` when referencing custom content types.
+
+**Why it fails:** The SDK expects references to the actual type objects, not string names (except for base types like `'_image'`).
+
+**Example of what NOT to do:**
+```typescript
+// ❌ WRONG - Using string instead of type reference
+hero: {
+  type: 'component',
+  contentType: 'HeroComponentType'  // String instead of reference
+}
+
+featuredArticle: {
+  type: 'content',
+  allowedTypes: ['ArticleContentType']  // String instead of reference
+}
+```
+
+**Solution:** Use the actual type object references:
+```typescript
+// ✅ CORRECT - Using type object references
+hero: {
+  type: 'component',
+  contentType: HeroComponentType  // Reference to the type object
+}
+
+featuredArticle: {
+  type: 'content',
+  allowedTypes: [ArticleContentType]  // Reference to the type object
+}
+
+// Base types can remain as strings:
+featuredImage: {
+  type: 'contentReference',
+  allowedTypes: ['_image']  // Base types are strings
+}
+```
+
+## 7. Incorrect editorSettings Usage
+
+**Problem:** Using `editorSettings` with wrong structure or on non-richText properties.
+
+**Why it matters:** `editorSettings` is now supported in SDK for configuring TinyMCE toolbar, but only on `richText` properties.
+
+**Example of what NOT to do:**
+```typescript
+// ❌ WRONG - editorSettings on non-richText property
+title: {
+  type: 'string',
+  editorSettings: {  // Only valid on richText
+    preset: 'minimal'
+  }
+}
+```
+
+**Solution:** Use `editorSettings` only on `richText` properties:
+```typescript
+// ✅ CORRECT - editorSettings on richText property
+bodyText: {
+  type: 'richText',
+  displayName: 'Body Text',
+  group: 'content',
+  editorSettings: {
+    preset: 'minimal'  // Now supported!
+  }
+}
+```
+
 ## Quick Checklist
 
 Before finalizing your content type definition:
@@ -180,3 +250,5 @@ Before finalizing your content type definition:
 - [ ] Contracts don't have a `baseType` field
 - [ ] All required imports are present
 - [ ] File naming follows conventions (e.g., `BlogPage.tsx` for BlogPage type)
+- [ ] Type references use objects (e.g., `ArticleContentType`), not strings (e.g., `'ArticleContentType'`)
+- [ ] `editorSettings` used only on `richText` properties (not on string/other types)
