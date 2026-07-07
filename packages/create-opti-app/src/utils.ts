@@ -5,5 +5,5 @@ export function exec(command: string, cwd: string): void {
 }
 
 export function isValidProjectName(name: string): boolean {
-  return /^[a-zA-Z0-9_-]+$/.test(name);
+  return /^[a-z0-9-]+$/.test(name);
 }
