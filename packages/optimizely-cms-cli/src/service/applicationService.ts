@@ -119,7 +119,7 @@ async function getApplication(
  * Detects changes between existing application and config.
  * Returns a patch object with only changed fields, or null if no changes.
  */
-function detectApplicationChanges(
+export function detectApplicationChanges(
   existingApp: Application,
   configApp: ApplicationsType,
 ): ApplicationPatch | null {
@@ -190,7 +190,7 @@ function detectApplicationChanges(
 /**
  * Compares two host arrays for equality.
  */
-function areHostsEqual(
+export function areHostsEqual(
   hosts1: any[] | undefined,
   hosts2: any[] | undefined,
 ): boolean {
@@ -200,9 +200,12 @@ function areHostsEqual(
 
   return hosts1.every((host1, index) => {
     const host2 = hosts2[index];
+    // Normalize type field - API may return empty object instead of string
+    const type1 = typeof host1.type === 'string' ? host1.type : undefined;
+    const type2 = typeof host2.type === 'string' ? host2.type : undefined;
     return (
       host1.authority === host2.authority &&
-      host1.type === host2.type &&
+      type1 === type2 &&
       host1.locale === host2.locale &&
       host1.preferredUrlScheme === host2.preferredUrlScheme
     );
@@ -212,7 +215,7 @@ function areHostsEqual(
 /**
  * Compares two previewUrlFormats objects for equality.
  */
-function arePreviewUrlFormatsEqual(
+export function arePreviewUrlFormatsEqual(
   formats1: Record<string, string> | undefined,
   formats2: Record<string, string> | undefined,
 ): boolean {
