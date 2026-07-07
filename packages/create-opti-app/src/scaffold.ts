@@ -63,16 +63,19 @@ export async function createFreshProject(options: FreshCreateOptions): Promise<s
     process.exit(1);
   }
 
-  const s = p.spinner();
-
-  s.start(`Creating ${fw.label} project...`);
+  p.log.info(`Creating ${fw.label} project...`);
   try {
-    exec(`${fw.createCommand} ${options.projectName}`, process.cwd());
-    s.stop(`${fw.label} project created.`);
+    exec(`${fw.createCommand} ${options.projectName}`, process.cwd(), { interactive: true });
   } catch {
-    s.stop(`Failed to create ${fw.label} project. Make sure ${fw.createCommand.split(' ')[1]} is available.`);
+    p.log.error(`Failed to create ${fw.label} project. Make sure ${fw.createCommand.split(' ')[1]} is available.`);
     process.exit(1);
   }
 
+  if (!fs.existsSync(targetDir)) {
+    p.log.error(`Project directory "${options.projectName}" was not created.`);
+    process.exit(1);
+  }
+
+  p.log.success(`${fw.label} project created.`);
   return targetDir;
 }
