@@ -8,6 +8,34 @@ type Application = components['schemas']['Application'];
 type ApplicationPatch = components['schemas']['ApplicationPatch'];
 
 /**
+ * Formats API error response into a descriptive Error object.
+ */
+const formatApiError = (response: any, operation: string): Error => {
+  const errorTitle = response.error?.title || 'Unknown error';
+  const errors = (response.error as any)?.errors;
+
+  if (errors && Array.isArray(errors)) {
+    const formattedErrors = errors
+      .map((err: any) => {
+        const field = err.field ? `[${err.field}]` : '';
+        return `  ${field} ${err.detail}`;
+      })
+      .join('\n');
+    return new Error(`Failed to ${operation}: ${errorTitle}\n${formattedErrors}`);
+  }
+
+  const errorDetails = response.error?.detail || JSON.stringify(response.error);
+  return new Error(`Failed to ${operation}: ${errorTitle}. Details: ${errorDetails}`);
+};
+
+/**
+ * Normalizes application or host type field.
+ * API may return empty object instead of string.
+ */
+const normalizeType = (type: any, defaultType = 'website'): string =>
+  typeof type === 'string' ? type : defaultType;
+
+/**
  * Creates an application in the CMS.
  * Returns the created application with its key.
  * Throws an error if creation fails.
@@ -27,23 +55,8 @@ async function createApplication(
     },
   });
 
-  if (!response.response.ok) {
-    const errorTitle = response.error?.title || 'Unknown error';
-    const errors = (response.error as any)?.errors;
-
-    if (errors && Array.isArray(errors)) {
-      const formattedErrors = errors
-        .map((err: any) => {
-          const field = err.field ? `[${err.field}]` : '';
-          return `  ${field} ${err.detail}`;
-        })
-        .join('\n');
-      throw new Error(`Failed to create application: ${errorTitle}\n${formattedErrors}`);
-    }
-
-    const errorDetails = response.error?.detail || JSON.stringify(response.error);
-    throw new Error(`Failed to create application: ${errorTitle}. Details: ${errorDetails}`);
-  }
+  if (!response.response.ok)
+    throw formatApiError(response, 'create application');
 
   return response.data;
 }
@@ -66,23 +79,8 @@ async function updateApplication(
     body: patch,
   });
 
-  if (!response.response.ok) {
-    const errorTitle = response.error?.title || 'Unknown error';
-    const errors = (response.error as any)?.errors;
-
-    if (errors && Array.isArray(errors)) {
-      const formattedErrors = errors
-        .map((err: any) => {
-          const field = err.field ? `[${err.field}]` : '';
-          return `  ${field} ${err.detail}`;
-        })
-        .join('\n');
-      throw new Error(`Failed to update application: ${errorTitle}\n${formattedErrors}`);
-    }
-
-    const errorDetails = response.error?.detail || JSON.stringify(response.error);
-    throw new Error(`Failed to update application: ${errorTitle}. Details: ${errorDetails}`);
-  }
+  if (!response.response.ok)
+    throw formatApiError(response, 'update application');
 }
 
 /**
@@ -133,7 +131,9 @@ export function detectApplicationChanges(
   }
 
   // Compare type - normalize for comparison
-  const existingType = typeof existingApp.type === 'string' ? existingApp.type : 'website';
+  const existingType = normalizeType(existingApp.type);
+  const isWebsiteType = configApp.type === 'website';
+
   if (configApp.type !== existingType) {
     patch.type = configApp.type as any;
     hasChanges = true;
@@ -158,30 +158,21 @@ export function detectApplicationChanges(
   }
 
   // Compare usePreviewTokens (only for website type)
-  if (configApp.type === 'website') {
-    if (configApp.usePreviewTokens !== existingApp.usePreviewTokens) {
-      patch.usePreviewTokens = configApp.usePreviewTokens;
-      hasChanges = true;
-    }
+  if (isWebsiteType && configApp.usePreviewTokens !== existingApp.usePreviewTokens) {
+    patch.usePreviewTokens = configApp.usePreviewTokens;
+    hasChanges = true;
   }
 
   // Compare hosts (deep comparison)
-  const hostsChanged = !areHostsEqual(existingApp.hosts, configApp.hosts);
-  if (hostsChanged) {
+  if (!areHostsEqual(existingApp.hosts, configApp.hosts)) {
     patch.hosts = configApp.hosts as any;
     hasChanges = true;
   }
 
   // Compare previewUrlFormats (only for website type)
-  if (configApp.type === 'website') {
-    const previewFormatsChanged = !arePreviewUrlFormatsEqual(
-      existingApp.previewUrlFormats,
-      configApp.previewUrlFormats,
-    );
-    if (previewFormatsChanged) {
-      patch.previewUrlFormats = configApp.previewUrlFormats;
-      hasChanges = true;
-    }
+  if (isWebsiteType && !arePreviewUrlFormatsEqual(existingApp.previewUrlFormats, configApp.previewUrlFormats)) {
+    patch.previewUrlFormats = configApp.previewUrlFormats;
+    hasChanges = true;
   }
 
   return hasChanges ? patch : null;
@@ -200,12 +191,9 @@ export function areHostsEqual(
 
   return hosts1.every((host1, index) => {
     const host2 = hosts2[index];
-    // Normalize type field - API may return empty object instead of string
-    const type1 = typeof host1.type === 'string' ? host1.type : undefined;
-    const type2 = typeof host2.type === 'string' ? host2.type : undefined;
     return (
       host1.authority === host2.authority &&
-      type1 === type2 &&
+      normalizeType(host1.type, undefined) === normalizeType(host2.type, undefined) &&
       host1.locale === host2.locale &&
       host1.preferredUrlScheme === host2.preferredUrlScheme
     );
@@ -225,8 +213,8 @@ export function arePreviewUrlFormatsEqual(
   const keys1 = Object.keys(formats1).sort();
   const keys2 = Object.keys(formats2).sort();
 
-  if (keys1.length !== keys2.length) return false;
-  if (!keys1.every((key, i) => key === keys2[i])) return false;
+  if (keys1.length !== keys2.length || !keys1.every((key, i) => key === keys2[i]))
+    return false;
 
   return keys1.every(key => formats1[key] === formats2[key]);
 }
