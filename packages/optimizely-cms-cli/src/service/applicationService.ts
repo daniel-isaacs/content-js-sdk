@@ -7,9 +7,8 @@ import chalk from 'chalk';
 type Application = components['schemas']['Application'];
 type ApplicationPatch = components['schemas']['ApplicationPatch'];
 
-/**
- * Formats API error response into a descriptive Error object.
- */
+// UTILITIES
+
 const formatApiError = (response: any, operation: string): Error => {
   const errorTitle = response.error?.title || 'Unknown error';
   const errors = (response.error as any)?.errors;
@@ -28,163 +27,18 @@ const formatApiError = (response: any, operation: string): Error => {
   return new Error(`Failed to ${operation}: ${errorTitle}. Details: ${errorDetails}`);
 };
 
-/**
- * Normalizes application or host type field.
- * API may return empty object instead of string.
- */
 const normalizeType = (type: any, defaultType = 'website'): string =>
   typeof type === 'string' ? type : defaultType;
 
-/**
- * Creates an application in the CMS.
- * Returns the created application with its key.
- * Throws an error if creation fails.
- */
-async function createApplication(
-  application: Application,
-  host?: string,
-): Promise<Application | undefined> {
-  const client = await createApiClient(host);
-
-  const response = await client.POST('/applications', {
-    body: application,
-    params: {
-      header: {
-        Prefer: ['return=representation'],
-      },
-    },
-  });
-
-  if (!response.response.ok)
-    throw formatApiError(response, 'create application');
-
-  return response.data;
-}
-
-/**
- * Updates an application in the CMS.
- * Throws an error if update fails.
- */
-async function updateApplication(
-  key: string,
-  patch: ApplicationPatch,
-  host?: string,
-): Promise<void> {
-  const client = await createApiClient(host);
-
-  const response = await client.PATCH('/applications/{key}', {
-    params: {
-      path: { key },
-    },
-    body: patch,
-  });
-
-  if (!response.response.ok)
-    throw formatApiError(response, 'update application');
-}
-
-/**
- * Checks if content exists based on config keys. Creates content if not present.
- * Returns a map of content config keys to CMS content refs (GUIDs).
- */
-async function getApplication(
-  key: string,
-  host?: string,
-): Promise<Application | undefined> {
-  const client = await createApiClient(host);
-
-  const response = await client.GET('/applications/{key}', {
-    params: {
-      path: { key },
-    },
-  });
-
-  // 404 means application doesn't exist - return undefined
-  if (response.response.status === 404) {
-    return undefined;
-  }
-
-  if (!response.response.ok) {
-    throw new Error(
-      `Failed to get application: ${response.error?.title || 'Unknown error'}`,
-    );
-  }
-
-  return response.data;
-}
-
-/**
- * Detects changes between existing application and config.
- * Returns a patch object with only changed fields, or null if no changes.
- */
-export function detectApplicationChanges(
-  existingApp: Application,
-  configApp: ApplicationsType,
-): ApplicationPatch | null {
-  const patch: ApplicationPatch = {};
-  let hasChanges = false;
-
-  // Compare displayName
-  if (configApp.displayName !== existingApp.displayName) {
-    patch.displayName = configApp.displayName;
-    hasChanges = true;
-  }
-
-  // Compare type - normalize for comparison
-  const existingType = normalizeType(existingApp.type);
-  const isWebsiteType = configApp.type === 'website';
-
-  if (configApp.type !== existingType) {
-    patch.type = configApp.type as any;
-    hasChanges = true;
-  }
-
-  // Compare entryPoint
-  if (configApp.entryPoint !== existingApp.entryPoint) {
-    patch.entryPoint = configApp.entryPoint;
-    hasChanges = true;
-  }
-
-  // Compare isDefault
-  if (configApp.isDefault !== existingApp.isDefault) {
-    patch.isDefault = configApp.isDefault;
-    hasChanges = true;
-  }
-
-  // Compare useApplicationSpecificAssets
-  if (configApp.useApplicationSpecificAssets !== existingApp.useApplicationSpecificAssets) {
-    patch.useApplicationSpecificAssets = configApp.useApplicationSpecificAssets;
-    hasChanges = true;
-  }
-
-  // Compare usePreviewTokens (only for website type)
-  if (isWebsiteType && configApp.usePreviewTokens !== existingApp.usePreviewTokens) {
-    patch.usePreviewTokens = configApp.usePreviewTokens;
-    hasChanges = true;
-  }
-
-  // Compare hosts (deep comparison)
-  if (!areHostsEqual(existingApp.hosts, configApp.hosts)) {
-    patch.hosts = configApp.hosts as any;
-    hasChanges = true;
-  }
-
-  // Compare previewUrlFormats (only for website type)
-  if (isWebsiteType && !arePreviewUrlFormatsEqual(existingApp.previewUrlFormats, configApp.previewUrlFormats)) {
-    patch.previewUrlFormats = configApp.previewUrlFormats;
-    hasChanges = true;
-  }
-
-  return hasChanges ? patch : null;
-}
+// COMPARISON HELPERS
 
 /**
  * Compares two host arrays for equality.
  */
-export function areHostsEqual(
+export const areHostsEqual = (
   hosts1: any[] | undefined,
   hosts2: any[] | undefined,
-): boolean {
+): boolean => {
   if (!hosts1 && !hosts2) return true;
   if (!hosts1 || !hosts2) return false;
   if (hosts1.length !== hosts2.length) return false;
@@ -198,15 +52,15 @@ export function areHostsEqual(
       host1.preferredUrlScheme === host2.preferredUrlScheme
     );
   });
-}
+};
 
 /**
  * Compares two previewUrlFormats objects for equality.
  */
-export function arePreviewUrlFormatsEqual(
+export const arePreviewUrlFormatsEqual = (
   formats1: Record<string, string> | undefined,
   formats2: Record<string, string> | undefined,
-): boolean {
+): boolean => {
   if (!formats1 && !formats2) return true;
   if (!formats1 || !formats2) return false;
 
@@ -217,127 +71,231 @@ export function arePreviewUrlFormatsEqual(
     return false;
 
   return keys1.every(key => formats1[key] === formats2[key]);
-}
+};
 
 /**
- * Ensures applications exist.
- * Creates applications if they don't exist. Requires entryPoint to be set.
+ * Detects changes between existing application and config.
+ * Returns a patch object with only changed fields, or null if no changes.
  */
-async function checkApplicationsWithContent(
+export const detectApplicationChanges = (
+  existingApp: Application,
+  configApp: ApplicationsType,
+): ApplicationPatch | null => {
+  const patch: ApplicationPatch = {};
+  const isWebsiteType = configApp.type === 'website';
+
+  if (configApp.displayName !== existingApp.displayName)
+    patch.displayName = configApp.displayName;
+
+  if (configApp.type !== normalizeType(existingApp.type))
+    patch.type = configApp.type as any;
+
+  if (configApp.entryPoint !== existingApp.entryPoint)
+    patch.entryPoint = configApp.entryPoint;
+
+  if (configApp.isDefault !== existingApp.isDefault)
+    patch.isDefault = configApp.isDefault;
+
+  if (configApp.useApplicationSpecificAssets !== existingApp.useApplicationSpecificAssets)
+    patch.useApplicationSpecificAssets = configApp.useApplicationSpecificAssets;
+
+  if (!areHostsEqual(existingApp.hosts, configApp.hosts))
+    patch.hosts = configApp.hosts as any;
+
+  if (isWebsiteType) {
+    if (configApp.usePreviewTokens !== existingApp.usePreviewTokens)
+      patch.usePreviewTokens = configApp.usePreviewTokens;
+
+    if (
+      !arePreviewUrlFormatsEqual(
+        existingApp.previewUrlFormats,
+        configApp.previewUrlFormats,
+      )
+    )
+      patch.previewUrlFormats = configApp.previewUrlFormats;
+  }
+
+  return Object.keys(patch).length ? patch : null;
+};
+
+// VALIDATION HELPERS
+
+const validateEntryPoint = (app: ApplicationsType): void => {
+  if (!app.entryPoint)
+    throw new Error(`No entryPoint defined for application ${app.key}`);
+};
+
+const validateInProcessWebsiteFields = (app: ApplicationsType): void => {
+  if (
+    app.type === 'inProcessWebsite' &&
+    ('usePreviewTokens' in app || 'previewUrlFormats' in app)
+  )
+    throw new Error(`Invalid fields for inProcessWebsite application ${app.key}`);
+};
+
+const setDefaultPreviewFormats = (app: ApplicationsType): void => {
+  if (app.type !== 'inProcessWebsite' && !app.previewUrlFormats) {
+    app.previewUrlFormats = {
+      any: '{host}/preview?key={key}&ver={version}&loc={locale}&ctx={context}',
+    };
+  }
+};
+
+// API OPERATIONS
+
+const createApplication = async (
+  application: Application,
+  host?: string,
+): Promise<Application | undefined> => {
+  const client = await createApiClient(host);
+
+  const response = await client.POST('/applications', {
+    body: application,
+    params: {
+      header: {
+        Prefer: ['return=representation'],
+      },
+    },
+  });
+
+  if (!response.response.ok) throw formatApiError(response, 'create application');
+
+  return response.data;
+};
+
+const updateApplication = async (
+  key: string,
+  patch: ApplicationPatch,
+  host?: string,
+): Promise<void> => {
+  const client = await createApiClient(host);
+
+  const response = await client.PATCH('/applications/{key}', {
+    params: {
+      path: { key },
+    },
+    body: patch,
+  });
+
+  if (!response.response.ok) throw formatApiError(response, 'update application');
+};
+
+// APPLICATION
+
+const getApplication = async (
+  key: string,
+  host?: string,
+): Promise<Application | undefined> => {
+  const client = await createApiClient(host);
+
+  const response = await client.GET('/applications/{key}', {
+    params: {
+      path: { key },
+    },
+  });
+
+  if (response.response.status === 404) return undefined;
+
+  if (!response.response.ok)
+    throw new Error(
+      `Failed to get application: ${response.error?.title || 'Unknown error'}`,
+    );
+
+  return response.data;
+};
+
+const handleExistingApplication = async (
+  existingApp: Application,
+  app: ApplicationsType,
+  host?: string,
+): Promise<{ updated: boolean }> => {
+  const changes = detectApplicationChanges(existingApp, app);
+
+  if (!changes) return { updated: false };
+
+  await updateApplication(app.key!, changes, host);
+  return { updated: true };
+};
+
+const checkApplicationsWithContent = async (
   applications: ApplicationsType[],
   host?: string,
-): Promise<void> {
+): Promise<void> => {
   for (const app of applications) {
     const appSpinner = ora(`Checking application "${app.displayName}"`).start();
+
     try {
-      // Check if application already exists first
       const existingApp = await getApplication(app.key!, host);
 
       if (existingApp) {
-        // Detect changes and update if needed
-        const changes = detectApplicationChanges(existingApp, app);
-
-        if (!changes) {
-          appSpinner.succeed(
-            chalk.green(`Application "${app.displayName}" is up to date (${app.key})`),
-          );
-          continue;
-        }
-
-        // Apply updates
-        await updateApplication(app.key!, changes, host);
-        appSpinner.succeed(
-          chalk.green(`Application "${app.displayName}" updated (${app.key})`),
-        );
+        const { updated } = await handleExistingApplication(existingApp, app, host);
+        const message =
+          updated ?
+            `Application "${app.displayName}" updated (${app.key})`
+          : `Application "${app.displayName}" is up to date (${app.key})`;
+        appSpinner.succeed(chalk.green(message));
         continue;
       }
 
-      // Validate entryPoint is set
-      if (!app.entryPoint) {
-        appSpinner.fail(
-          chalk.red(`No entryPoint defined for application "${app.displayName}"`),
-        );
-        console.error(
-          chalk.dim(`Configure entryPoint in application config via content array`),
-        );
-        throw new Error(`No entryPoint defined for application ${app.key}`);
-      }
+      validateEntryPoint(app);
+      validateInProcessWebsiteFields(app);
+      setDefaultPreviewFormats(app);
 
-      // Validate inProcessWebsite doesn't use preview fields
-      if (app.type === 'inProcessWebsite') {
-        if ('usePreviewTokens' in app || 'previewUrlFormats' in app) {
-          appSpinner.fail(
-            chalk.red(`Application "${app.displayName}" has invalid configuration`),
-          );
-          console.error(
-            chalk.dim(
-              `Fields 'usePreviewTokens' and 'previewUrlFormats' are only valid for type 'website'`,
-            ),
-          );
-          throw new Error(`Invalid fields for inProcessWebsite application ${app.key}`);
-        }
-      }
-
-      // Set default previewUrlFormats if not provided
-      if (app.type !== 'inProcessWebsite' && !app.previewUrlFormats) {
-        app.previewUrlFormats = {
-          any: '{host}/preview?key={key}&ver={version}&loc={locale}&ctx={context}',
-        };
-      }
-
-      // Create the application
       const result = await checkApplication(app, host);
       appSpinner.succeed(
         chalk.green(`Application "${app.displayName}" created (${result.key})`),
       );
     } catch (error) {
+      const errorMessage = (error as Error).message;
       appSpinner.fail(chalk.red(`Failed to ensure application "${app.displayName}"`));
+
+      if (errorMessage.includes('No entryPoint'))
+        console.error(
+          chalk.dim('Configure entryPoint in application config via content array'),
+        );
+
+      if (errorMessage.includes('Invalid fields'))
+        console.error(
+          chalk.dim(
+            "Fields 'usePreviewTokens' and 'previewUrlFormats' are only valid for type 'website'",
+          ),
+        );
+
       throw error;
     }
   }
-}
+};
 
 /**
  * Ensures an application exists. Creates it if not present.
  * Returns the application key.
  */
-export async function checkApplication(
+export const checkApplication = async (
   application: ApplicationsType,
   host?: string,
-): Promise<{ key: string; existed: boolean }> {
-  if (!application.key) {
-    throw new Error('Application key is required');
-  }
+): Promise<{ key: string; existed: boolean }> => {
+  if (!application.key) throw new Error('Application key is required');
 
-  // Check if application already exists
   const existing = await getApplication(application.key, host);
-  if (existing) {
-    return { key: application.key, existed: true };
-  }
+  if (existing) return { key: application.key, existed: true };
 
-  // Create application (cast to Application for API compatibility)
   const created = await createApplication(application as unknown as Application, host);
-  if (!created?.key) {
-    throw new Error('Failed to create application: no key returned');
-  }
+  if (!created?.key) throw new Error('Failed to create application: no key returned');
 
   return { key: created.key, existed: false };
-}
+};
 
 /**
  * Checks if applications exist and processes content/creates apps if needed.
  * Returns true if all apps already existed (skipped processing).
  */
-export async function checkApplications(
+export const checkApplications = async (
   applications: ApplicationsType[],
   contentArray: any[] | undefined,
   host?: string,
-): Promise<boolean> {
-  if (applications.length === 0) {
-    return true;
-  }
+): Promise<boolean> => {
+  if (applications.length === 0) return true;
 
-  // Check if all applications already exist
   const checkSpinner = ora('Checking applications').start();
   const existingApps = await Promise.all(
     applications.map(app => getApplication(app.key!, host)),
@@ -351,19 +309,20 @@ export async function checkApplications(
 
   checkSpinner.info(chalk.blue('Some applications need setup'));
 
-  // Collect missing app keys
   const missingAppKeys = new Set(
-    applications
-      .filter((_, i) => !existingApps[i])
-      .map(app => app.key!)
+    applications.filter((_, index) => !existingApps[index]).map(app => app.key!),
   );
 
-  // lazy load content service to avoid circular dependency
   const { processContentWithApplications } = await import('./contentService.js');
 
   const contentSpinner = ora('Processing content configuration').start();
   try {
-    await processContentWithApplications(contentArray || [], applications, host, missingAppKeys);
+    await processContentWithApplications(
+      contentArray || [],
+      applications,
+      host,
+      missingAppKeys,
+    );
     contentSpinner.succeed(chalk.green('Content configuration processed'));
   } catch (error) {
     contentSpinner.fail(chalk.red('Failed to process content configuration'));
@@ -373,4 +332,5 @@ export async function checkApplications(
   await checkApplicationsWithContent(applications, host);
 
   return false;
-}
+};
+
