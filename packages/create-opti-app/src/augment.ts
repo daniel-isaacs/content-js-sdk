@@ -44,6 +44,18 @@ export async function augmentProject(options: ScaffoldOptions): Promise<void> {
     path.join(cwd, '.env'),
   );
 
+  const libDir = fs.existsSync(path.join(cwd, 'src', 'lib'))
+    ? path.join(cwd, 'src', 'lib')
+    : fs.existsSync(path.join(cwd, 'src'))
+      ? path.join(cwd, 'src', 'lib')
+      : path.join(cwd, 'lib');
+
+  fs.mkdirSync(libDir, { recursive: true });
+  copyIfNotExists(
+    path.join(scaffoldDir, 'optimizely.ts'),
+    path.join(libDir, 'optimizely.ts'),
+  );
+
   if (options.framework === 'nextjs') {
     const appDir = fs.existsSync(path.join(cwd, 'src', 'app'))
       ? path.join(cwd, 'src', 'app')
@@ -67,6 +79,8 @@ export async function augmentProject(options: ScaffoldOptions): Promise<void> {
   p.note(
     [
       '# Configure your CMS credentials in .env',
+      '# Add to your root layout.tsx:',
+      "import '@/lib/optimizely';",
       '# Then start developing',
     ].join('\n'),
     'Next steps',
