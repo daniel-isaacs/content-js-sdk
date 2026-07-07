@@ -66,7 +66,7 @@ async function runCreatePrompts(args: {
       placeholder: 'my-opti-app',
       validate: (value) => {
         if (!value.trim()) return 'Project name is required';
-        if (!isValidProjectName(value)) return 'Only letters, numbers, hyphens and underscores';
+        if (!isValidProjectName(value)) return 'Only lowercase letters, numbers and hyphens';
       },
     });
     if (p.isCancel(result)) return null;
@@ -155,7 +155,7 @@ async function runFreshPrompts(args: {
       placeholder: 'my-opti-app',
       validate: (value) => {
         if (!value.trim()) return 'Project name is required';
-        if (!isValidProjectName(value)) return 'Only letters, numbers, hyphens and underscores';
+        if (!isValidProjectName(value)) return 'Only lowercase letters, numbers and hyphens';
       },
     });
     if (p.isCancel(result)) return null;
