@@ -19,4 +19,29 @@ export default buildConfig({
       sortOrder: 3,
     },
   ],
+  content: [
+    {
+      key: 'AboutExperienceContent',
+      displayName: 'About Experience',
+      contentType: 'AboutExperience',
+    },
+],
+  applications: [
+    {
+      key: 'tanstack_app',
+      entryPoint: 'AboutExperienceContent',
+      displayName: 'TanStack Start Template',
+      type: 'website',
+      isDefault: true,
+      useApplicationSpecificAssets: false,
+      hosts: [
+        {
+          authority: 'localhost:3000',
+          type: 'primary',
+          preferredUrlScheme: 'https',
+        },
+      ],
+      usePreviewTokens: true,
+    },
+  ],
 });
