@@ -90,7 +90,11 @@ export const detectApplicationChanges = (
   if (configApp.type !== normalizeType(existingApp.type))
     patch.type = configApp.type as any;
 
-  if (configApp.entryPoint !== existingApp.entryPoint)
+  if (
+    configApp.entryPoint &&
+    configApp.entryPoint.startsWith('cms://') &&
+    configApp.entryPoint !== existingApp.entryPoint
+  )
     patch.entryPoint = configApp.entryPoint;
 
   if (configApp.isDefault !== existingApp.isDefault)
@@ -175,6 +179,10 @@ const updateApplication = async (
       path: { key },
     },
     body: patch,
+    bodySerializer: (body) => JSON.stringify(body),
+    headers: {
+      'Content-Type': 'application/merge-patch+json',
+    },
   });
 
   if (!response.response.ok) throw formatApiError(response, 'update application');
@@ -309,22 +317,15 @@ export const checkApplications = async (
   );
   const allAppsExist = existingApps.every(app => app !== undefined);
 
-  if (allAppsExist) {
-    checkSpinner.succeed(chalk.green('All applications already exist'));
-    return true;
-  }
-
-  checkSpinner.info(chalk.blue('Some applications need setup'));
+  if (allAppsExist)
+    checkSpinner.succeed(chalk.green('All applications exist, checking for updates'));
+  else checkSpinner.info(chalk.blue('Some applications need setup'));
 
   const { processContentWithApplications } = await import('./contentService.js');
 
   const contentSpinner = ora('Processing content configuration').start();
   try {
-    await processContentWithApplications(
-      contentArray || [],
-      applications,
-      host,
-    );
+    await processContentWithApplications(contentArray || [], applications, host);
     contentSpinner.succeed(chalk.green('Content configuration processed'));
   } catch (error) {
     contentSpinner.fail(chalk.red('Failed to process content configuration'));
@@ -335,4 +336,3 @@ export const checkApplications = async (
 
   return false;
 };
-

@@ -50,7 +50,7 @@ export default buildConfig({
     },
     {
       key: 'blog_app',
-      displayName: 'Blog App Alt 1',
+      displayName: 'Blog App',
       type: 'website',
       isDefault: false,
       entryPoint: 'BlogExperienceContent',
