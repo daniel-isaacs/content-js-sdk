@@ -309,10 +309,6 @@ export const checkApplications = async (
 
   checkSpinner.info(chalk.blue('Some applications need setup'));
 
-  const missingAppKeys = new Set(
-    applications.filter((_, index) => !existingApps[index]).map(app => app.key!),
-  );
-
   const { processContentWithApplications } = await import('./contentService.js');
 
   const contentSpinner = ora('Processing content configuration').start();
@@ -321,7 +317,6 @@ export const checkApplications = async (
       contentArray || [],
       applications,
       host,
-      missingAppKeys,
     );
     contentSpinner.succeed(chalk.green('Content configuration processed'));
   } catch (error) {

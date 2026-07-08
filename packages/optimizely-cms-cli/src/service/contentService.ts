@@ -148,43 +148,24 @@ async function checkContentFromConfig(
 
 /**
  * Processes content array and maps application entryPoints to content refs.
- * Creates content instances and updates application entryPoints with generated GUIDs.
- * For missing applications, always creates new content instances.
+ * Creates content instances with deterministic UUIDs and updates application entryPoints.
  */
 export async function processContentWithApplications(
   contentArray: ContentConfig[],
   applications: any[],
   host?: string,
-  missingAppKeys?: Set<string>,
 ): Promise<void> {
   if (!contentArray || !Array.isArray(contentArray) || contentArray.length === 0) {
     return;
   }
 
-  // Collect entryPoint keys for missing apps
-  const missingAppEntryPoints = new Set(
-    applications
-      .filter(app => missingAppKeys?.has(app.key) && app.entryPoint && !app.entryPoint.startsWith('cms://'))
-      .map(app => app.entryPoint)
-  );
-
-  // Only check/create content for items NOT used as entryPoints by missing apps
-  const contentToCheck = contentArray.filter(c => !missingAppEntryPoints.has(c.key));
-  const contentRefMap = await checkContentFromConfig(contentToCheck, host);
+  // Check/create all content items first
+  const contentRefMap = await checkContentFromConfig(contentArray, host);
 
   // Map content keys in entryPoint to full content refs
   for (const app of applications) {
     if (app.entryPoint && !app.entryPoint.startsWith('cms://')) {
-      // entryPoint is a content key, need to map to full ref
-      let contentRef = contentRefMap.get(app.entryPoint);
-
-      // Force create new content instance if app doesn't exist
-      if (missingAppKeys?.has(app.key)) {
-        contentRef = await createNewContentInstance(
-          contentArray.find(c => c.key === app.entryPoint),
-          host,
-        );
-      }
+      const contentRef = contentRefMap.get(app.entryPoint);
 
       if (contentRef) {
         app.entryPoint = contentRef;
@@ -200,27 +181,3 @@ export async function processContentWithApplications(
   }
 }
 
-/**
- * Creates a new content instance with a new UUID.
- */
-async function createNewContentInstance(
-  contentConfig: ContentConfig | undefined,
-  host?: string,
-): Promise<string | undefined> {
-  if (!contentConfig) return undefined;
-
-  const client = await createApiClient(host);
-
-  console.log(chalk.dim(`  Creating new instance for "${contentConfig.key}"...`));
-
-  await validateContentType(contentConfig.contentType, client);
-
-  const createdKey = await createContent(contentConfig, client);
-
-  if (!createdKey) {
-    throw new Error(`Failed to create new instance for "${contentConfig.key}"`);
-  }
-
-  console.log(chalk.dim(`  Created new instance for "${contentConfig.key}"`));
-  return toContentRef(createdKey);
-}
