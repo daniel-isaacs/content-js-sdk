@@ -72,8 +72,8 @@ async function createContent(
   });
 
   if (!response.response.ok) {
-    // Status code 409 means content exists, 403 may also indicate content exists with this key
-    if (response.response.status === 409 || response.response.status === 403) {
+    // Status code 409 means content exists
+    if (response.response.status === 409) {
       return undefined;
     }
 
