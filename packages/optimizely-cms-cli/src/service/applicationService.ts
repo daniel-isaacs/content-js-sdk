@@ -261,6 +261,13 @@ const checkApplicationsWithContent = async (
           ),
         );
 
+      if (errorMessage.includes('entry points cannot overlap'))
+        console.error(
+          chalk.dim(
+            `The entry point for "${app.displayName}" is already in use by another application.\nEach entry point can only be assigned to one application.\nTo fix: either use a different entry point or remove/update the conflicting application in CMS.`,
+          ),
+        );
+
       throw error;
     }
   }
