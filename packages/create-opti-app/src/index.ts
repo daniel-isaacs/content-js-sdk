@@ -6,6 +6,7 @@ import { createProject, createFreshProject } from './scaffold.js';
 import { augmentProject } from './augment.js';
 import { detectPackageManager } from './detect.js';
 import { TEMPLATE_NAMES } from './registry.js';
+import { isValidProjectName } from './utils.js';
 import type { ParsedArgs, TemplateName, PackageManager } from './types.js';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
@@ -51,6 +52,10 @@ function parseArgs(argv: string[]): ParsedArgs {
       }
       default:
         if (!arg.startsWith('-') && !args.projectName) {
+          if (!isValidProjectName(arg)) {
+            console.error(`Invalid project name "${arg}". Only lowercase letters, numbers and hyphens are allowed.`);
+            process.exit(1);
+          }
           args.projectName = arg;
         }
     }

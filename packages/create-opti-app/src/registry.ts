@@ -20,7 +20,7 @@ export const FRAMEWORKS: FrameworkConfig[] = [
 
 export const TEMPLATES: TemplateConfig[] = [
   { name: 'nextjs-starter', label: 'Next.js Starter', hint: 'Minimal Next.js + Optimizely CMS', framework: 'nextjs', source: 'samples/nextjs-template' },
-  { name: 'nextjs-alloy', label: 'Next.js Alloy', hint: 'Full demo site with Tailwind', framework: 'nextjs', source: 'templates/alloy-template' },
+  { name: 'nextjs-alloy', label: 'Next.js Alloy', hint: 'Full demo site with Tailwind', framework: 'nextjs', source: 'templates/alloy' },
   { name: 'tanstack-starter', label: 'TanStack Start', hint: 'TanStack Start + Optimizely CMS', framework: 'tanstack', source: 'samples/tanstack-template' },
 ];
 
