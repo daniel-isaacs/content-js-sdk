@@ -164,7 +164,8 @@ export async function processContentWithApplications(
 
   // Map content keys in entryPoint to full content refs
   for (const app of applications) {
-    if (app.entryPoint && !app.entryPoint.startsWith('cms://')) {
+    const isContentRef = app.entryPoint && (app.entryPoint.startsWith('cms://') || app.entryPoint.startsWith('content://'));
+    if (app.entryPoint && !isContentRef) {
       const contentRef = contentRefMap.get(app.entryPoint);
 
       if (contentRef) {

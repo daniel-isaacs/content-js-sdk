@@ -30,6 +30,9 @@ const formatApiError = (response: any, operation: string): Error => {
 const normalizeType = (type: any, defaultType = 'website'): string =>
   typeof type === 'string' ? type : defaultType;
 
+const isContentRef = (val: string | undefined) =>
+    val && (val.startsWith('cms://') || val.startsWith('content://'));
+
 // COMPARISON HELPERS
 
 /**
@@ -91,8 +94,7 @@ export const detectApplicationChanges = (
     patch.type = configApp.type as any;
 
   if (
-    configApp.entryPoint &&
-    configApp.entryPoint.startsWith('cms://') &&
+    isContentRef(configApp.entryPoint) &&
     configApp.entryPoint !== existingApp.entryPoint
   )
     patch.entryPoint = configApp.entryPoint;
