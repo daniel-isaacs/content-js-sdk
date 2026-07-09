@@ -6,6 +6,7 @@ export default buildConfig({
     './src/components/**/*.tsx',
     './src/components/contracts/*.ts',
   ],
+  languages: ['fi', 'de', 'sp'],
   propertyGroups: [
     {
       key: 'SEO',
