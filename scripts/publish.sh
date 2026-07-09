@@ -29,15 +29,26 @@ if [ ! -f .changeset/pre.json ]; then
   done
 fi
 
-# After stable release, create Jira release with linked issues
-if [ ! -f .changeset/pre.json ] && [ -n "$JIRA_PASSWORD" ]; then
-  echo "📋 Creating Jira releases..."
+# Create or update Jira release (non-blocking - npm publish always succeeds)
+set +e  # Disable exit on error for Jira section
+if [ -n "$JIRA_BOT_PASSWORD" ]; then
+  # Check if this is a pre-release
+  IS_PRERELEASE=false
+  if [ -f .changeset/pre.json ]; then
+    IS_PRERELEASE=true
+    echo "📋 Creating Jira releases (unreleased)..."
+  else
+    echo "📋 Updating Jira releases (released)..."
+  fi
 
   for pkg in packages/*/package.json; do
     PKG_NAME=$(node -p "require('./$pkg').name")
     PKG_VERSION=$(node -p "require('./$pkg').version")
 
-    # Find previous tag for this package (current tag not pushed yet)
+    # Strip beta suffix for Jira release name (2.2.0-beta.0 → 2.2.0)
+    JIRA_VERSION=$(echo "$PKG_VERSION" | sed 's/-beta\.[0-9]*$//')
+
+    # Find previous tag for this package
     PREV_TAG=$(git tag --sort=-creatordate | grep "^${PKG_NAME}@" | head -1)
 
     if [ -z "$PREV_TAG" ]; then
@@ -50,22 +61,67 @@ if [ ! -f .changeset/pre.json ] && [ -n "$JIRA_PASSWORD" ]; then
       | grep -oE 'CMS-[0-9]+' | sort -u)
 
     if [ -z "$JIRA_IDS" ]; then
-      echo "No Jira tickets found for $PKG_NAME@$PKG_VERSION"
+      echo "No Jira tickets found for $PKG_NAME@$JIRA_VERSION"
       continue
     fi
 
-    echo "Found tickets for $PKG_NAME@$PKG_VERSION: $(echo $JIRA_IDS | tr '\n' ' ')"
+    echo "Found tickets for $PKG_NAME@$JIRA_VERSION: $(echo $JIRA_IDS | tr '\n' ' ')"
 
-    # Create release version in Jira
-    RESPONSE=$(curl -s -w "\n%{http_code}" -X POST "$JIRA_URL/rest/api/3/version" \
+    # Check if release already exists in Jira
+    SEARCH_RESPONSE=$(curl -s "$JIRA_URL/rest/api/3/project/CMS/versions" \
       -H "Content-Type: application/json" \
-      -u "$JIRA_USERNAME:$JIRA_PASSWORD" \
-      -d "{
-        \"name\": \"${PKG_NAME}@${PKG_VERSION}\",
+      -u "$JIRA_BOT_USERNAME:$JIRA_BOT_PASSWORD")
+
+    EXISTING_VERSION_ID=$(echo "$SEARCH_RESPONSE" | node -p "
+      const versions = JSON.parse(require('fs').readFileSync(0));
+      const existing = versions.find(v => v.name === '${PKG_NAME}@${JIRA_VERSION}');
+      existing ? existing.id : ''
+    ")
+
+    if [ -n "$EXISTING_VERSION_ID" ]; then
+      # Update existing release
+      if [ "$IS_PRERELEASE" = false ]; then
+        echo "Updating existing Jira release to released=true..."
+        RESPONSE=$(curl -s -w "\n%{http_code}" -X PUT "$JIRA_URL/rest/api/3/version/$EXISTING_VERSION_ID" \
+          -H "Content-Type: application/json" \
+          -u "$JIRA_BOT_USERNAME:$JIRA_BOT_PASSWORD" \
+          -d "{
+            \"released\": true,
+            \"releaseDate\": \"$(date +%Y-%m-%d)\"
+          }")
+
+        HTTP_CODE=$(echo "$RESPONSE" | tail -1)
+        if [ "$HTTP_CODE" = "200" ]; then
+          echo "Updated Jira release version ID: $EXISTING_VERSION_ID"
+        else
+          echo "::warning::Failed to update Jira release (HTTP $HTTP_CODE)"
+        fi
+      else
+        echo "Jira release already exists (ID: $EXISTING_VERSION_ID), skipping"
+      fi
+      continue
+    fi
+
+    # Create new release version in Jira
+    if [ "$IS_PRERELEASE" = true ]; then
+      RELEASE_PAYLOAD="{
+        \"name\": \"${PKG_NAME}@${JIRA_VERSION}\",
+        \"project\": \"CMS\",
+        \"released\": false
+      }"
+    else
+      RELEASE_PAYLOAD="{
+        \"name\": \"${PKG_NAME}@${JIRA_VERSION}\",
         \"project\": \"CMS\",
         \"released\": true,
         \"releaseDate\": \"$(date +%Y-%m-%d)\"
-      }")
+      }"
+    fi
+
+    RESPONSE=$(curl -s -w "\n%{http_code}" -X POST "$JIRA_URL/rest/api/3/version" \
+      -H "Content-Type: application/json" \
+      -u "$JIRA_BOT_USERNAME:$JIRA_BOT_PASSWORD" \
+      -d "$RELEASE_PAYLOAD")
 
     HTTP_CODE=$(echo "$RESPONSE" | tail -1)
     BODY=$(echo "$RESPONSE" | sed '$d')
@@ -82,7 +138,7 @@ if [ ! -f .changeset/pre.json ] && [ -n "$JIRA_PASSWORD" ]; then
     for ISSUE in $JIRA_IDS; do
       LINK_RESPONSE=$(curl -s -w "\n%{http_code}" -X PUT "$JIRA_URL/rest/api/3/issue/$ISSUE" \
         -H "Content-Type: application/json" \
-        -u "$JIRA_USERNAME:$JIRA_PASSWORD" \
+        -u "$JIRA_BOT_USERNAME:$JIRA_BOT_PASSWORD" \
         -d "{
           \"update\": {
             \"fixVersions\": [{\"add\": {\"id\": \"$VERSION_ID\"}}]
@@ -99,3 +155,4 @@ if [ ! -f .changeset/pre.json ] && [ -n "$JIRA_PASSWORD" ]; then
     done
   done
 fi
+set -e  # Re-enable exit on error
