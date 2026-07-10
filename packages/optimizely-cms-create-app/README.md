@@ -1,6 +1,6 @@
-# @optimizely/create-app
+# @optimizely/cms-create-app
 
-[![npm version](https://img.shields.io/npm/v/@optimizely/create-app)](https://www.npmjs.com/package/@optimizely/create-app)
+[![npm version](https://img.shields.io/npm/v/@optimizely/cms-create-app)](https://www.npmjs.com/package/@optimizely/cms-create-app)
 
 Create Optimizely CMS applications with one command. Scaffolds a fully configured project with the SDK, CLI, and all the boilerplate you need to start building.
 
@@ -13,7 +13,7 @@ Create Optimizely CMS applications with one command. Scaffolds a fully configure
 ## Usage
 
 ```bash
-npx @optimizely/create-app
+npx @optimizely/cms-create-app
 ```
 
 The interactive CLI will guide you through selecting a mode, project name, template, and package manager.
@@ -21,13 +21,13 @@ The interactive CLI will guide you through selecting a mode, project name, templ
 ### Create from template
 
 ```bash
-npx @optimizely/create-app my-app --template nextjs-starter --pm pnpm
+npx @optimizely/cms-create-app my-app --template nextjs-starter --pm pnpm
 ```
 
 ### Create a fresh project
 
 ```bash
-npx @optimizely/create-app my-app
+npx @optimizely/cms-create-app my-app
 # Select "Fresh project"
 # Select a framework (Next.js or TanStack Start)
 ```
@@ -36,7 +36,7 @@ npx @optimizely/create-app my-app
 
 ```bash
 cd my-existing-project
-npx @optimizely/create-app
+npx @optimizely/cms-create-app
 # Select "Add Optimizely CMS to this project"
 ```
 
