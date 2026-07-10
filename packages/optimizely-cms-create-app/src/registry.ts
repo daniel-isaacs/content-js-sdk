@@ -14,14 +14,49 @@ export interface TemplateConfig {
 }
 
 export const FRAMEWORKS: FrameworkConfig[] = [
-  { key: 'nextjs', label: 'Next.js', detectPackage: 'next', createCommand: 'npx create-next-app@latest' },
-  { key: 'tanstack', label: 'TanStack Start', detectPackage: '@tanstack/react-start', createCommand: 'npx create-start@latest' },
+  {
+    key: 'nextjs',
+    label: 'Next.js',
+    detectPackage: 'next',
+    createCommand: 'npx create-next-app@latest',
+  },
+  {
+    key: 'tanstack',
+    label: 'TanStack Start',
+    detectPackage: '@tanstack/react-start',
+    createCommand: 'npx create-start@latest',
+  },
 ];
 
 export const TEMPLATES: TemplateConfig[] = [
-  { name: 'nextjs-starter', label: 'Next.js Starter', hint: 'Minimal Next.js + Optimizely CMS', framework: 'nextjs', source: 'samples/nextjs-template' },
-  { name: 'nextjs-alloy', label: 'Next.js Alloy', hint: 'Full demo site with Tailwind', framework: 'nextjs', source: 'templates/alloy' },
-  { name: 'tanstack-starter', label: 'TanStack Start', hint: 'TanStack Start + Optimizely CMS', framework: 'tanstack', source: 'samples/tanstack-template' },
+  {
+    name: 'nextjs-starter',
+    label: 'Next.js Starter',
+    hint: 'Minimal Next.js + Optimizely CMS',
+    framework: 'nextjs',
+    source: 'samples/nextjs-template',
+  },
+  {
+    name: 'nextjs-stride',
+    label: 'Next.js Stride',
+    hint: 'Full demo site with Tailwind',
+    framework: 'nextjs',
+    source: 'templates/stride',
+  },
+  {
+    name: 'nextjs-alloy',
+    label: 'Next.js Alloy',
+    hint: 'Full demo site with Tailwind',
+    framework: 'nextjs',
+    source: 'templates/alloy',
+  },
+  {
+    name: 'tanstack-starter',
+    label: 'TanStack Start',
+    hint: 'TanStack Start + Optimizely CMS',
+    framework: 'tanstack',
+    source: 'samples/tanstack-template',
+  },
 ];
 
 export const PACKAGES = {
