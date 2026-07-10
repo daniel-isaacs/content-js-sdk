@@ -17,6 +17,7 @@ import { pathToFileURL } from 'node:url';
 import { constants } from 'node:fs';
 import { translateErrorMessage } from '../../utils/errors.js';
 import { contractToManifest } from '../../utils/mapping.js';
+import { syncLocales } from '../../service/localeService.js';
 
 export default class ConfigPush extends BaseCommand<typeof ConfigPush> {
   static override args = {
@@ -58,7 +59,7 @@ export default class ConfigPush extends BaseCommand<typeof ConfigPush> {
 
     const configPath = pathToFileURL(configFilePath).href;
 
-    const { componentPaths, propertyGroups, applications, content } =
+    const { componentPaths, propertyGroups, applications, content, locale } =
       await readFromPath(configPath);
 
     // Validate components field
@@ -180,6 +181,11 @@ export default class ConfigPush extends BaseCommand<typeof ConfigPush> {
     }
 
     const data = response.data;
+
+    // Sync locales from config
+    if (locale && Array.isArray(locale) && locale.length > 0) {
+      await syncLocales(locale, restClient);
+    }
 
     // Check and ensure applications (skips if all exist)
     await checkApplications(validatedApplications, content, flags.host);
