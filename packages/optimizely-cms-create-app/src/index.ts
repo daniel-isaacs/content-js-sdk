@@ -66,7 +66,7 @@ function parseArgs(argv: string[]): ParsedArgs {
 
 function printHelp(): void {
   console.log(`
-  Usage: npx @optimizely/create-app [project-name] [options]
+  Usage: npx @optimizely/cms-create-app [project-name] [options]
 
   Options:
     --template <name>   Template to use (${TEMPLATE_NAMES.join(', ')})

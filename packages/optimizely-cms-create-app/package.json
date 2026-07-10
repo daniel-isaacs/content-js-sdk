@@ -1,10 +1,10 @@
 {
-  "name": "@optimizely/create-app",
+  "name": "@optimizely/cms-create-app",
   "version": "1.0.0",
   "description": "Create Optimizely CMS applications with one command",
   "type": "module",
   "bin": {
-    "create-opti-app": "./bin/create-opti-app.js"
+    "cms-create-app": "./bin/cms-create-app.js"
   },
   "files": [
     "dist",
