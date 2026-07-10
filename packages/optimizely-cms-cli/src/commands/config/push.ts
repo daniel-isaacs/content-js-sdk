@@ -59,7 +59,7 @@ export default class ConfigPush extends BaseCommand<typeof ConfigPush> {
 
     const configPath = pathToFileURL(configFilePath).href;
 
-    const { componentPaths, propertyGroups, applications, content, languages } =
+    const { componentPaths, propertyGroups, applications, content, locale } =
       await readFromPath(configPath);
 
     // Validate components field
@@ -183,8 +183,8 @@ export default class ConfigPush extends BaseCommand<typeof ConfigPush> {
     const data = response.data;
 
     // Sync locales from config
-    if (languages && Array.isArray(languages) && languages.length > 0) {
-      await syncLocales(languages, restClient);
+    if (locale && Array.isArray(locale) && locale.length > 0) {
+      await syncLocales(locale, restClient);
     }
 
     // Check and ensure applications (skips if all exist)

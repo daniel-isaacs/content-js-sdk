@@ -237,7 +237,7 @@ export const readFromPath = async (configPath: string) => {
       propertyGroups: config.default['propertyGroups'],
       applications: config.default['applications'],
       content: config.default['content'],
-      languages: config.default['languages'],
+      locale: config.default['locale'],
     };
   } catch (error) {
     console.error(chalk.red('Failed to read configuration file'));

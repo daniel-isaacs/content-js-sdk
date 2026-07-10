@@ -59,7 +59,7 @@ export type ContentType = {
 
 export type BuildConfig = {
   components: string[];
-  languages: string[];
+  locale: string[];
   propertyGroups: Array<PropertyGroupType>;
   applications?: Array<ApplicationsType>;
   content?: Array<ContentType>;

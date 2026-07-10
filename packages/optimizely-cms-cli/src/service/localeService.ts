@@ -22,10 +22,10 @@ const deriveDisplayName = (key: string): string => {
  * Syncs locales from buildConfig to CMS via REST API
  */
 export async function syncLocales(
-  languages: string[],
+  locale: string[],
   restClient: ApiClient,
 ): Promise<void> {
-  if (!languages || !Array.isArray(languages) || languages.length === 0) {
+  if (!locale || !Array.isArray(locale) || locale.length === 0) {
     return;
   }
 
@@ -37,7 +37,9 @@ export async function syncLocales(
     spinner.fail(chalk.red('Failed to fetch existing locales'));
     const error = listResponse.error;
     console.error(
-      chalk.dim(`${error.status || ''} ${error.detail || error.title || 'Unknown error'}`),
+      chalk.dim(
+        `${error.status || ''} ${error.detail || error.title || 'Unknown error'}`,
+      ),
     );
     return;
   }
@@ -46,12 +48,12 @@ export async function syncLocales(
   const existingKeys = new Set(existingLocales.map(l => l.key));
 
   // Categorize locales
-  const toCreate = languages.filter(lang => !existingKeys.has(lang));
-  const toEnable = languages.filter(lang => {
+  const toCreate = locale.filter(lang => !existingKeys.has(lang));
+  const toEnable = locale.filter(lang => {
     const existing = existingLocales.find(l => l.key === lang);
     return existing && !existing.isEnabled;
   });
-  const alreadyEnabled = languages.filter(lang => {
+  const alreadyEnabled = locale.filter(lang => {
     const existing = existingLocales.find(l => l.key === lang);
     return existing && existing.isEnabled;
   });
@@ -67,7 +69,7 @@ export async function syncLocales(
 
     const createResponse = await restClient.POST('/locales', {
       body: newLocale as any,
-      bodySerializer: (body) => JSON.stringify(body),
+      bodySerializer: body => JSON.stringify(body),
     });
 
     if (createResponse.error) {
@@ -93,7 +95,7 @@ export async function syncLocales(
     const patchResponse = await restClient.PATCH(`/locales/{key}`, {
       params: { path: { key: lang } },
       body: { isEnabled: true } as any,
-      bodySerializer: (body) => JSON.stringify(body),
+      bodySerializer: body => JSON.stringify(body),
       headers: {
         'content-type': 'application/merge-patch+json',
       },
