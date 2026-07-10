@@ -77,7 +77,11 @@ export const HeaderClient = ({
         </div>
       </header>
 
-      <MobileMenu isOpen={mobileMenuOpen} onClose={() => setMobileMenuOpen(false)} />
+      <MobileMenu
+        isOpen={mobileMenuOpen}
+        onClose={() => setMobileMenuOpen(false)}
+        navigationItems={navigationItems}
+      />
 
       <SearchModal isOpen={searchModalOpen} onClose={() => setSearchModalOpen(false)} />
     </>
