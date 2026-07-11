@@ -10,31 +10,14 @@ This starter template comes with pre-built components and examples for building 
 
 You need a CMS instance with Graph installed. Both local and SaaS instances are supported.
 
-## Import Content
-
-To populate your CMS with some example content:
-
-1. Log in to your Optimizely CMS admin interface
-2. Navigate to **Settings** → **Import Data**
-3. Upload the `ExportedFile.episerverdata` file from this template directory
-4. Select the root node as import target
-5. Follow the import wizard to complete the process
-
-This will import all the pre-configured pages, components, and content structure needed for this template.
-
-## Configure an Application
-
-1. Navigate to **Settings** → **Applications**
-2. Create new (headless) application
-3. Choose the existing start page from the imported content
-4. Click **Create Application**
-5. Navigate to **Hostnames**
-6. Add a primary hostname with value **localhost:3000**, secure connection, and choose all locales
-7. Save
-
-## Run Template
-
-Create a copy of `.env.example` and rename it to `.env`, then fill out all the environment variables.
+1. Log in to your Optimizely CMS admin interface.
+2. Navigate to **Settings** → **API Keys**.
+3. Create a new API key.
+5. Navigate to **Settings** → **Set Access Rights**.
+6. Ensure the root is selected and **Apply settings for all subitems** is checked.
+7. Add full permissions for the API key.
+8. Save access rights.
+4. Create a copy of `.env.example` and rename it to `.env`, then fill out all the environment variables.
 
 Sync all configuration to the CMS:
 
@@ -47,6 +30,18 @@ pnpm config:push
 # or
 bun config:push
 ```
+
+## Import Content
+
+1. Navigate to **Settings** → **Import Data**
+2. Upload the `ExportedFile.episerverdata` file from this template directory
+3. Select the root in **Select content destination**.
+4. Ensure **Update existing content items with matching ID** is checked.
+5. Click **Begin Import**.
+
+This will import all the pre-configured pages, components, and content structure needed for this template.
+
+## Run Template
 
 Finally, run the development server:
 
