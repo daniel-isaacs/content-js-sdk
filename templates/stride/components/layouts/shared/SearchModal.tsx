@@ -105,22 +105,20 @@ export const SearchModal: React.FC<SearchModalProps> = ({
     (item.intro ?? item.body ?? item.heading ?? '').slice(0, 200);
 
   const getResultMetadata = (result: SearchableContent) => {
-    const type = result.type.toLowerCase();
-
-    if (type.includes('news')) {
-      return {
-        icon: <FileText size={16} className='text-blue-500 mt-1' />,
-        label: 'News',
-        className: 'bg-blue-100 text-blue-700',
-      };
-    }
-
-    if (type.includes('event')) {
-      return {
-        icon: <Calendar size={16} className='text-green-500 mt-1' />,
-        label: 'Event',
-        className: 'bg-green-100 text-green-700',
-      };
+    const urlParts = result.url.toLowerCase().split('/').reverse();
+    for (const part of urlParts) {
+      if (part.includes('event'))
+        return {
+          icon: <Calendar size={16} className='text-green-500 mt-1' />,
+          label: 'Event',
+          className: 'bg-green-100 text-green-700',
+        };
+      else if (part.includes('news'))
+        return {
+          icon: <FileText size={16} className='text-blue-500 mt-1' />,
+          label: 'News',
+          className: 'bg-blue-100 text-blue-700',
+        };
     }
 
     return {

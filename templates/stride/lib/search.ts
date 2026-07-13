@@ -93,7 +93,7 @@ const fetchAllSearchableContent = async (): Promise<SearchableContent[]> => {
 
     return await Promise.all(contentPromises);
   } catch (error) {
-    console.error('getAllSearchableContent - error:', error);
+    console.error('Error fetching searchable content:', error);
     return [];
   }
 };
