@@ -42,34 +42,31 @@ const extractSearchableText = (item: RawSearchableItem | null) => {
   };
 };
 
-const flattenNavigation = (
-  items: NavigationItem[],
-): Array<{ displayName: string; url: string }> => {
-  const pages: Array<{ displayName: string; url: string }> = [];
+const flattenNavigation = (items: NavigationItem[]): Array<{ displayName: string; url: string }> =>
+  items
+    .filter(item => item.displayName !== 'Overview')
+    .flatMap(item => [
+      { displayName: item.displayName, url: item.url },
+      ...(item.items?.length ? flattenNavigation(item.items) : []),
+    ]);
 
-  for (const item of items) {
-    if (item.displayName !== 'Overview') {
-      pages.push({
-        displayName: item.displayName,
-        url: item.url,
-      });
-    }
-
-    if (item.items?.length) {
-      pages.push(...flattenNavigation(item.items));
-    }
-  }
-
-  return pages;
-};
+const createFallbackContent = (page: { displayName: string; url: string }): SearchableContent => ({
+  key: '',
+  displayName: page.displayName,
+  url: page.url,
+  type: 'Page',
+  heading: page.displayName,
+  intro: undefined,
+  body: undefined,
+  locale: 'en',
+});
 
 const fetchAllSearchableContent = async (): Promise<SearchableContent[]> => {
   try {
     const navigationItems = await getNavigationItems();
     const pages = flattenNavigation(navigationItems);
-    const results: SearchableContent[] = [];
 
-    for (const page of pages) {
+    const contentPromises = pages.map(async page => {
       try {
         const fullContent = await getClient().getContentByPath(page.url);
 
@@ -77,7 +74,7 @@ const fetchAllSearchableContent = async (): Promise<SearchableContent[]> => {
           const content = fullContent[0];
           const searchableText = extractSearchableText(content);
 
-          results.push({
+          return {
             key: content._metadata?.key || '',
             displayName: page.displayName,
             url: page.url,
@@ -86,34 +83,15 @@ const fetchAllSearchableContent = async (): Promise<SearchableContent[]> => {
             intro: searchableText.intro,
             body: searchableText.body,
             locale: content._metadata?.locale || 'en',
-          });
-        } else {
-          results.push({
-            key: '',
-            displayName: page.displayName,
-            url: page.url,
-            type: 'Page',
-            heading: page.displayName,
-            intro: undefined,
-            body: undefined,
-            locale: 'en',
-          });
+          };
         }
-      } catch (error) {
-        results.push({
-          key: '',
-          displayName: page.displayName,
-          url: page.url,
-          type: 'Page',
-          heading: page.displayName,
-          intro: undefined,
-          body: undefined,
-          locale: 'en',
-        });
+        return createFallbackContent(page);
+      } catch {
+        return createFallbackContent(page);
       }
-    }
+    });
 
-    return results;
+    return await Promise.all(contentPromises);
   } catch (error) {
     console.error('getAllSearchableContent - error:', error);
     return [];
@@ -126,32 +104,49 @@ export const getAllSearchableContent = unstable_cache(
   { revalidate: 3600 },
 );
 
+type SearchableContentWithLowercase = SearchableContent & {
+  _lower: {
+    displayName: string;
+    heading: string;
+    intro: string;
+    body: string;
+    url: string;
+  };
+};
+
+const addLowercaseFields = (item: SearchableContent): SearchableContentWithLowercase => ({
+  ...item,
+  _lower: {
+    displayName: item.displayName.toLowerCase(),
+    heading: (item.heading || '').toLowerCase(),
+    intro: (item.intro || '').toLowerCase(),
+    body: (item.body || '').toLowerCase(),
+    url: item.url.toLowerCase(),
+  },
+});
+
 export const searchContent = (
   content: SearchableContent[],
   query: string,
 ): Array<SearchableContent & { score: number }> => {
   const searchTerm = query.toLowerCase();
+  const contentWithLower = content.map(addLowercaseFields);
 
-  const scoredResults = content.map(item => {
+  const scoredResults = contentWithLower.map(item => {
     let score = 0;
-    const displayName = item.displayName.toLowerCase();
-    const heading = (item.heading || '').toLowerCase();
-    const intro = (item.intro || '').toLowerCase();
-    const body = (item.body || '').toLowerCase();
-    const url = item.url.toLowerCase();
 
-    if (displayName === searchTerm) score += 10;
-    else if (displayName.includes(searchTerm)) score += 5;
+    if (item._lower.displayName === searchTerm) score += 10;
+    else if (item._lower.displayName.includes(searchTerm)) score += 5;
 
-    if (heading === searchTerm) score += 10;
-    else if (heading.includes(searchTerm)) score += 5;
+    if (item._lower.heading === searchTerm) score += 10;
+    else if (item._lower.heading.includes(searchTerm)) score += 5;
 
-    if (intro.includes(searchTerm)) score += 3;
-    if (body.includes(searchTerm)) score += 2;
+    if (item._lower.intro.includes(searchTerm)) score += 3;
+    if (item._lower.body.includes(searchTerm)) score += 2;
+    if (item._lower.url.includes(searchTerm)) score += 1;
 
-    if (url.includes(searchTerm)) score += 1;
-
-    return { ...item, score };
+    const { _lower, ...itemWithoutLower } = item;
+    return { ...itemWithoutLower, score };
   });
 
   return scoredResults.filter(item => item.score > 0).sort((a, b) => b.score - a.score);

@@ -16,7 +16,11 @@ interface SearchResult extends SearchableContent {
   score?: number;
 }
 
-export const SearchModal: React.FC<SearchModalProps> = ({ isOpen, onClose, searchableContent }) => {
+export const SearchModal: React.FC<SearchModalProps> = ({
+  isOpen,
+  onClose,
+  searchableContent,
+}) => {
   const [searchQuery, setSearchQuery] = React.useState('');
   const [results, setResults] = React.useState<SearchResult[]>([]);
   const [isSearching, setIsSearching] = React.useState(false);
@@ -97,33 +101,33 @@ export const SearchModal: React.FC<SearchModalProps> = ({ isOpen, onClose, searc
     }
   }, [selectedIndex]);
 
-  const getDescription = (item: SearchableContent) => {
-    if (item.intro) return item.intro.slice(0, 200);
-    if (item.body) return item.body.slice(0, 200);
-    if (item.heading) return item.heading;
-    return '';
-  };
+  const getDescription = (item: SearchableContent) =>
+    (item.intro ?? item.body ?? item.heading ?? '').slice(0, 200);
 
-  const getResultIcon = (url: string) => {
-    const urlLower = url.toLowerCase();
-    if (urlLower.includes('news')) {
-      return <FileText size={16} className='text-blue-500 mt-1' />;
-    }
-    if (urlLower.includes('event')) {
-      return <Calendar size={16} className='text-green-500 mt-1' />;
-    }
-    return <ExternalLink size={16} className='text-gray-500 mt-1' />;
-  };
+  const getResultMetadata = (result: SearchableContent) => {
+    const type = result.type.toLowerCase();
 
-  const getResultType = (result: SearchableContent) => {
-    const urlLower = result.url.toLowerCase();
-    if (urlLower.includes('news')) {
-      return { label: 'News', className: 'bg-blue-100 text-blue-700' };
+    if (type.includes('news')) {
+      return {
+        icon: <FileText size={16} className='text-blue-500 mt-1' />,
+        label: 'News',
+        className: 'bg-blue-100 text-blue-700',
+      };
     }
-    if (urlLower.includes('event')) {
-      return { label: 'Event', className: 'bg-green-100 text-green-700' };
+
+    if (type.includes('event')) {
+      return {
+        icon: <Calendar size={16} className='text-green-500 mt-1' />,
+        label: 'Event',
+        className: 'bg-green-100 text-green-700',
+      };
     }
-    return { label: 'Page', className: 'bg-gray-100 text-gray-700' };
+
+    return {
+      icon: <ExternalLink size={16} className='text-gray-500 mt-1' />,
+      label: 'Page',
+      className: 'bg-gray-100 text-gray-700',
+    };
   };
 
   if (!isOpen) return null;
@@ -169,53 +173,53 @@ export const SearchModal: React.FC<SearchModalProps> = ({ isOpen, onClose, searc
                     <div className='mb-2 px-2 py-1 text-xs text-gray-500'>
                       {results.length} result{results.length !== 1 ? 's' : ''} found
                     </div>
-                    {results.map((result, index) => (
-                      <Link
-                        key={result.key}
-                        href={result.url}
-                        onClick={onClose}
-                        className={cn(
-                          'block p-4 rounded-lg transition-colors',
-                          selectedIndex === index ?
-                            'bg-blue-50 border-2 border-blue-200'
-                          : 'hover:bg-gray-50',
-                        )}
-                      >
-                        <div className='flex items-start gap-3'>
-                          {getResultIcon(result.url)}
-                          <div className='flex-1 min-w-0'>
-                            <h3 className='font-semibold text-gray-900 truncate'>
-                              {result.heading || result.displayName}
-                            </h3>
-                            {getDescription(result) && (
-                              <p
-                                className='text-sm text-gray-600 mt-1'
-                                style={{
-                                  display: '-webkit-box',
-                                  WebkitLineClamp: 2,
-                                  WebkitBoxOrient: 'vertical',
-                                  overflow: 'hidden',
-                                }}
-                              >
-                                {getDescription(result)}
-                              </p>
-                            )}
-                            <div className='flex items-center gap-4 mt-2'>
-                              {(() => {
-                                const type = getResultType(result);
-                                return (
-                                  <span
-                                    className={`inline-flex items-center px-2 py-1 rounded-full text-xs font-medium ${type.className}`}
-                                  >
-                                    {type.label}
-                                  </span>
-                                );
-                              })()}
+                    {results.map((result, index) => {
+                      const metadata = getResultMetadata(result);
+                      const description = getDescription(result);
+
+                      return (
+                        <Link
+                          key={result.key}
+                          href={result.url}
+                          onClick={onClose}
+                          className={cn(
+                            'block p-4 rounded-lg transition-colors',
+                            selectedIndex === index ?
+                              'bg-blue-50 border-2 border-blue-200'
+                            : 'hover:bg-gray-50',
+                          )}
+                        >
+                          <div className='flex items-start gap-3'>
+                            {metadata.icon}
+                            <div className='flex-1 min-w-0'>
+                              <h3 className='font-semibold text-gray-900 truncate'>
+                                {result.heading || result.displayName}
+                              </h3>
+                              {description && (
+                                <p
+                                  className='text-sm text-gray-600 mt-1'
+                                  style={{
+                                    display: '-webkit-box',
+                                    WebkitLineClamp: 2,
+                                    WebkitBoxOrient: 'vertical',
+                                    overflow: 'hidden',
+                                  }}
+                                >
+                                  {description}
+                                </p>
+                              )}
+                              <div className='flex items-center gap-4 mt-2'>
+                                <span
+                                  className={`inline-flex items-center px-2 py-1 rounded-full text-xs font-medium ${metadata.className}`}
+                                >
+                                  {metadata.label}
+                                </span>
+                              </div>
                             </div>
                           </div>
-                        </div>
-                      </Link>
-                    ))}
+                        </Link>
+                      );
+                    })}
                   </div>
                 : <div className='p-8 text-center'>
                     <p className='text-gray-500'>No results found for "{searchQuery}"</p>
@@ -230,7 +234,9 @@ export const SearchModal: React.FC<SearchModalProps> = ({ isOpen, onClose, searc
             {!searchQuery && (
               <div className='p-8 text-center'>
                 <Search size={48} className='mx-auto text-gray-300 mb-4' />
-                <h3 className='text-lg font-semibold text-gray-900 mb-2'>Search Stride</h3>
+                <h3 className='text-lg font-semibold text-gray-900 mb-2'>
+                  Search Stride
+                </h3>
                 <p className='text-gray-500'>Find pages and content across the site</p>
               </div>
             )}
@@ -240,3 +246,4 @@ export const SearchModal: React.FC<SearchModalProps> = ({ isOpen, onClose, searc
     </div>
   );
 };
+
