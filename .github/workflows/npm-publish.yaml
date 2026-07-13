@@ -1,15 +1,13 @@
 name: Release Packages
 
-# Triggers automatically whenever code is pushed or merged to the main branch
-# Only runs when packages or changesets are modified
+# Manual trigger only - run from GitHub Actions UI when ready to publish
 on:
-  push:
-    branches:
-      - main
-    paths:
-      - 'packages/**'
-      - '.changeset/**'
-  workflow_dispatch: # Allows manual trigger from GitHub Actions UI
+  workflow_dispatch:
+    inputs:
+      skip_jira:
+        description: 'Skip Jira release creation'
+        type: boolean
+        default: false
 
 # Prevents multiple release workflows from running simultaneously
 concurrency: ${{ github.workflow }}-${{ github.ref }}
@@ -19,9 +17,7 @@ jobs:
     name: Release
     runs-on: ubuntu-latest
     permissions:
-      contents: write       # Needed to push version bumps and tags
-      pull-requests: write  # Needed for Changesets Bot to open the Version PR
-      packages: write       # Needed to publish pre-releases to GitHub Packages
+      contents: write       # Needed to push tags
       id-token: write       # CRITICAL: Needed for NPM Provenance security signing
 
     steps:
@@ -49,22 +45,12 @@ jobs:
         run: pnpm --filter "./packages/**" build
 
       # ==========================================
-      # CHANGESETS AUTOMATION & PUBLISHING
+      # PUBLISH TO NPM
       # ==========================================
-      - name: Create Release PR or Publish
-        id: changesets
-        uses: changesets/action@v1
-        with:
-          # Command to bump versions and update changelogs
-          version: pnpm changeset version
-          
-          # Command to execute the custom deployment script
-          publish: bash ./scripts/publish.sh
-          
-          # Git commit message for the bot
-          commit: "chore(release): version packages"
-          title: "chore(release): version packages"
+      - name: Publish to NPM
+        run: bash ./scripts/publish.sh
         env:
-          # Both tokens must be provided so the bash script can authenticate dynamically
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
+          JIRA_URL: ${{ secrets.JIRA_URL }}
+          JIRA_BOT_USERNAME: ${{ secrets.JIRA_BOT_USERNAME }}
+          JIRA_BOT_PASSWORD: ${{ secrets.JIRA_BOT_PASSWORD }}

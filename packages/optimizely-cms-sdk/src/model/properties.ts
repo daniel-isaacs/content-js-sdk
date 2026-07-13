@@ -6,7 +6,7 @@ export type AnyProperty = ArrayProperty<ArrayItems> | ArrayItems;
 
 export type INDEX_TYPE = 'disabled' | 'queryable' | 'searchable';
 
-export type RICHTEXT_PRESET = 'expanded' | 'standard' | 'minimal';
+export type RICHTEXT_PRESET = 'default' | 'expanded' | 'standard' | 'minimal';
 
 /** A "Base" content type property that includes all common attributes for all content type properties */
 type BaseProperty = {
@@ -87,14 +87,14 @@ export type FloatProperty = BaseProperty & {
 
 export type ContentReferenceProperty = BaseProperty & {
   type: 'contentReference';
-  contentType?: AnyContentType;
+  contentType?: AnyContentType | string;
   allowedTypes?: PermittedTypes[];
   restrictedTypes?: PermittedTypes[];
 };
 
 export type ContentProperty = BaseProperty & {
   type: 'content';
-  contentType?: AnyContentType;
+  contentType?: AnyContentType | string;
   allowedTypes?: PermittedTypes[];
   restrictedTypes?: PermittedTypes[];
 };

@@ -1,20 +1,35 @@
 import Link from 'next/link';
 import { Logo } from './Logo';
+import { getNavigationItems, type NavigationItem } from '../../../lib/navigation';
 
-export const Footer = () => {
+const excludeOverview = (item: NavigationItem) => item.displayName !== 'Overview';
+
+const matchesPattern = (text: string, patterns: string[]) =>
+  patterns.some(pattern => text.toLowerCase().includes(pattern));
+
+const findByPattern = (items: NavigationItem[], patterns: string[]) =>
+  items.find(item => matchesPattern(item.displayName, patterns));
+
+const filterChildren = (
+  items: NavigationItem[] | null | undefined,
+  excludeKey?: string,
+) => items?.filter(item => (!excludeKey || item.key !== excludeKey) && excludeOverview(item)) ?? [];
+
+export const Footer = async () => {
+  const navigationItems = await getNavigationItems();
+
+  const products = navigationItems.filter(item => !item.items?.length);
+  const aboutSection = findByPattern(navigationItems, ['about']);
+  const newsEventsSection = aboutSection?.items
+    ? findByPattern(aboutSection.items, ['news', 'events'])
+    : undefined;
+
+  const companyItems = filterChildren(aboutSection?.items, newsEventsSection?.key);
+  const resourceItems = filterChildren(newsEventsSection?.items);
+
   return (
     <footer className='pt-20 pb-12 bg-background md:px-12'>
       <div className='container mx-auto'>
-        {/* <div className='flex flex-col md:flex-row items-center justify-between pb-20 border-b border-dashed mb-20 border-foreground/15 gap-6'>
-          <Heading level={3} className='mb-0!'>
-            Ready to reach your peak?
-          </Heading>
-          <div className='flex gap-4'>
-            <Button>Get Started</Button>
-            <Button variant='outline'>Download App</Button>
-          </div>
-        </div> */}
-
         <Link href='/'>
           <Logo className='h-5' />
         </Link>
@@ -36,21 +51,13 @@ export const Footer = () => {
               Products
             </h4>
             <ul className='space-y-2'>
-              <li>
-                <Link href='/features' className='hover:text-foreground'>
-                  Features
-                </Link>
-              </li>
-              <li>
-                <Link href='/challenges' className='hover:text-foreground'>
-                  Challenges
-                </Link>
-              </li>
-              <li>
-                <Link href='/subscriptions' className='hover:text-foreground'>
-                  Subscriptions
-                </Link>
-              </li>
+              {products.map(item => (
+                <li key={item.key}>
+                  <Link href={item.url} className='hover:text-foreground'>
+                    {item.displayName}
+                  </Link>
+                </li>
+              ))}
             </ul>
           </div>
 
@@ -59,16 +66,13 @@ export const Footer = () => {
               Resources
             </h4>
             <ul className='space-y-2'>
-              <li>
-                <Link href='#' className='hover:text-foreground'>
-                  News
-                </Link>
-              </li>
-              <li>
-                <Link href='#' className='hover:text-foreground'>
-                  Events
-                </Link>
-              </li>
+              {resourceItems.map(item => (
+                <li key={item.key}>
+                  <Link href={item.url} className='hover:text-foreground'>
+                    {item.displayName}
+                  </Link>
+                </li>
+              ))}
             </ul>
           </div>
 
@@ -77,21 +81,13 @@ export const Footer = () => {
               Company
             </h4>
             <ul className='space-y-2'>
-              <li>
-                <Link href='/about' className='hover:text-foreground'>
-                  About us
-                </Link>
-              </li>
-              <li>
-                <Link href='/about/coaches' className='hover:text-foreground'>
-                  Coaches
-                </Link>
-              </li>
-              <li>
-                <Link href='/about/contact' className='hover:text-foreground'>
-                  Contact
-                </Link>
-              </li>
+              {companyItems.map(item => (
+                <li key={item.key}>
+                  <Link href={item.url} className='hover:text-foreground'>
+                    {item.displayName}
+                  </Link>
+                </li>
+              ))}
             </ul>
           </div>
         </div>

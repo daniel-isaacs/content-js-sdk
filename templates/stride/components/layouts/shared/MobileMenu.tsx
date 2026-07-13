@@ -4,43 +4,20 @@ import React from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { X, ChevronRight, ChevronLeft } from 'lucide-react';
-import { cn } from '../../lib/utils';
+import { cn } from '../../../lib/utils';
 import { Logo } from './Logo';
+import type { NavigationItem } from '../../../lib/navigation';
 
 interface MobileMenuProps {
   isOpen: boolean;
   onClose: () => void;
+  navigationItems: NavigationItem[];
 }
-
-const mainNavItems = [
-  { label: 'Features', href: '/features' },
-  { label: 'Challenges', href: '/challenges' },
-  { label: 'Subscriptions', href: '/subscriptions' },
-  {
-    label: 'About Us',
-    href: '/about',
-    children: [
-      { label: 'Overview', href: '/about' },
-      {
-        label: 'News & Events',
-        href: '/about/news-events',
-        children: [
-          { label: 'Overview', href: '/about/news-events' },
-          { label: 'Events', href: '/about/news-events/events' },
-          { label: 'News', href: '/about/news-events/news' },
-        ],
-      },
-      { label: 'Management', href: '/about/management' },
-      { label: 'Contact us', href: '/about/contact' },
-      { label: 'Become a Coach', href: '/about/coaches' },
-      { label: 'Reseller', href: '/about/reseller' },
-    ],
-  },
-];
 
 interface MenuItem {
   label: string;
   href: string;
+  isActive: boolean;
   children?: MenuItem[];
 }
 
@@ -50,11 +27,25 @@ interface MenuLevel {
   parentHref?: string;
 }
 
-export const MobileMenu: React.FC<MobileMenuProps> = ({ isOpen, onClose }) => {
+const convertNavigationItems = (items: NavigationItem[]): MenuItem[] =>
+  items.map(item => ({
+    label: item.displayName,
+    href: item.url,
+    isActive: item.isActive,
+    children: item.items ? convertNavigationItems(item.items) : undefined,
+  }));
+
+export const MobileMenu: React.FC<MobileMenuProps> = ({
+  isOpen,
+  onClose,
+  navigationItems,
+}) => {
   const pathname = usePathname();
-  const [menuStack, setMenuStack] = React.useState<MenuLevel[]>([
-    { items: mainNavItems },
-  ]);
+  const menuItems = React.useMemo(
+    () => convertNavigationItems(navigationItems),
+    [navigationItems],
+  );
+  const [menuStack, setMenuStack] = React.useState<MenuLevel[]>([{ items: menuItems }]);
   const currentDepth = menuStack.length - 1;
 
   const handleItemClick = (item: MenuItem) => {
@@ -79,22 +70,20 @@ export const MobileMenu: React.FC<MobileMenuProps> = ({ isOpen, onClose }) => {
   };
 
   const handleClose = () => {
-    setMenuStack([{ items: mainNavItems }]);
+    setMenuStack([{ items: menuItems }]);
     onClose();
   };
 
   React.useEffect(() => {
-    if (isOpen) {
-      document.body.style.overflow = 'hidden';
-    } else {
-      document.body.style.overflow = '';
-      setMenuStack([{ items: mainNavItems }]);
-    }
+    if (isOpen) document.body.style.overflow = 'hidden';
+    else document.body.style.overflow = '';
+
+    setMenuStack([{ items: menuItems }]);
 
     return () => {
       document.body.style.overflow = '';
     };
-  }, [isOpen]);
+  }, [isOpen, menuItems]);
 
   if (!isOpen) return null;
 

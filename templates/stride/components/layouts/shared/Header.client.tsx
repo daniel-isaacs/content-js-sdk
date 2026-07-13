@@ -6,12 +6,15 @@ import { Search, Menu } from 'lucide-react';
 import { MobileMenu } from './MobileMenu';
 import { Logo } from './Logo';
 import { SearchModal } from './SearchModal';
-import type { NavigationItem } from '../../lib/navigation';
+import type { NavigationItem } from '../../../lib/navigation';
+import type { SearchableContent } from '../../../lib/search';
 
 export const HeaderClient = ({
   navigationItems,
+  searchableContent,
 }: {
   navigationItems: NavigationItem[];
+  searchableContent: SearchableContent[];
 }) => {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [searchModalOpen, setSearchModalOpen] = useState(false);
@@ -77,9 +80,17 @@ export const HeaderClient = ({
         </div>
       </header>
 
-      <MobileMenu isOpen={mobileMenuOpen} onClose={() => setMobileMenuOpen(false)} />
+      <MobileMenu
+        isOpen={mobileMenuOpen}
+        onClose={() => setMobileMenuOpen(false)}
+        navigationItems={navigationItems}
+      />
 
-      <SearchModal isOpen={searchModalOpen} onClose={() => setSearchModalOpen(false)} />
+      <SearchModal
+        isOpen={searchModalOpen}
+        onClose={() => setSearchModalOpen(false)}
+        searchableContent={searchableContent}
+      />
     </>
   );
 };

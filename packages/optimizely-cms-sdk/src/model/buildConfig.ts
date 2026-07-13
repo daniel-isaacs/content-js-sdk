@@ -54,10 +54,12 @@ export type ContentType = {
   key: string;
   displayName: string;
   contentType: string;
+  locale?: string;
 };
 
 export type BuildConfig = {
   components: string[];
+  locale: string[];
   propertyGroups: Array<PropertyGroupType>;
   applications?: Array<ApplicationsType>;
   content?: Array<ContentType>;

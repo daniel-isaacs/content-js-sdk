@@ -1,0 +1,49 @@
+name: Create Version Bump PR
+
+# Manual trigger only
+on:
+  workflow_dispatch:
+    inputs:
+      pre_release:
+        description: 'Pre-release mode (beta)'
+        type: boolean
+        default: false
+
+jobs:
+  version:
+    name: Create Version PR
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+      pull-requests: write
+
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          persist-credentials: false
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 24
+
+      - name: Install pnpm
+        uses: pnpm/action-setup@v4
+
+      - name: Install Dependencies
+        run: pnpm install
+
+      - name: Enter Pre-release Mode
+        if: inputs.pre_release == true
+        run: pnpm changeset pre enter beta
+
+      - name: Create Version PR
+        uses: changesets/action@v1
+        with:
+          version: pnpm changeset version
+          commit: "chore(release): version packages"
+          title: "chore(release): version packages"
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

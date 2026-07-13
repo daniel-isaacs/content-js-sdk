@@ -6,6 +6,11 @@ import {
   MediaStringTypes,
 } from '../model/contentTypes.js';
 
+export type BaseTypeFragments = {
+  fields: string[];
+  extraFragments: string[];
+};
+
 // TYPE CHECKING
 
 /**
@@ -95,7 +100,23 @@ const COMMON_FRAGMENTS = [
 
 const COMMON_FIELDS = '..._IContent';
 
-export const BASE_TYPE_FRAGMENTS = {
-  fields: [COMMON_FIELDS],
-  extraFragments: [...COMMON_FRAGMENTS],
-};
+export function getBaseTypeFragments(baseType: string, contentTypeName?: string): BaseTypeFragments {
+  const prefix = contentTypeName && !isBaseType(contentTypeName) ? `${contentTypeName}__` : '';
+
+  if (baseType === '_image') {
+    return {
+      fields: [COMMON_FIELDS, `${prefix}assetMetadata:_assetMetadata { fileSize mimeType url }`, `${prefix}imageMetadata:_imageMetadata { width height }`],
+      extraFragments: [...COMMON_FRAGMENTS],
+    };
+  }
+  if (isBaseMediaType(baseType)) {
+    return {
+      fields: [COMMON_FIELDS, `${prefix}assetMetadata:_assetMetadata { fileSize mimeType url }`],
+      extraFragments: [...COMMON_FRAGMENTS],
+    };
+  }
+  return {
+    fields: [COMMON_FIELDS],
+    extraFragments: [...COMMON_FRAGMENTS],
+  };
+}

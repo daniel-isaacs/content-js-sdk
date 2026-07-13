@@ -6,6 +6,7 @@ export default buildConfig({
     './src/components/**/*.tsx',
     './src/components/contracts/*.ts',
   ],
+  locale: ['fi', 'de', 'sp'],
   propertyGroups: [
     {
       key: 'SEO',
@@ -16,6 +17,31 @@ export default buildConfig({
       key: 'SiteSettings',
       displayName: 'Site Settings',
       sortOrder: 2,
+    },
+  ],
+  content: [
+    {
+      key: 'StartContent',
+      displayName: 'Start',
+      contentType: 'Start',
+    },
+  ],
+  applications: [
+    {
+      key: 'alloy_app',
+      entryPoint: 'StartContent',
+      displayName: 'Alloy',
+      type: 'website',
+      isDefault: true,
+      useApplicationSpecificAssets: false,
+      hosts: [
+        {
+          authority: 'localhost:3000',
+          type: 'primary',
+          preferredUrlScheme: 'https',
+        },
+      ],
+      usePreviewTokens: true,
     },
   ],
 });

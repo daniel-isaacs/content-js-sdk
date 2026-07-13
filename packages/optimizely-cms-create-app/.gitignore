@@ -1,0 +1,6 @@
+dist/
+templates/nextjs-starter/
+templates/nextjs-stride/
+templates/nextjs-alloy/
+templates/tanstack-starter/
+node_modules/

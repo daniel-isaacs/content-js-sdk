@@ -10,6 +10,70 @@ export type NavigationItem = {
   items: NavigationItem[] | null;
 };
 
+type RawNavigationItem = {
+  _metadata?: {
+    key: string;
+    displayName?: string;
+    locale?: string;
+    types: string[];
+    url?: {
+      default?: string;
+    };
+  };
+};
+
+const fetchChildItems = async (
+  parentKey: string,
+  parentUrl: string,
+  locale: string,
+  activeKey: string,
+  isRoot: boolean = false,
+): Promise<NavigationItem[]> => {
+  const items = await getClient().getItems({ key: parentKey, locale });
+
+  if (!items?.length) return [];
+
+  const filteredItems = items.filter(
+    (item: RawNavigationItem) =>
+      item._metadata && !item._metadata.types.includes('BlankExperience'),
+  );
+
+  const childItems = await Promise.all(
+    filteredItems.map(async (item: RawNavigationItem) => {
+      const metadata = item._metadata!;
+      const grandchildItems = await fetchChildItems(
+        metadata.key,
+        metadata.url?.default || '',
+        locale,
+        activeKey,
+      );
+
+      return {
+        key: metadata.key,
+        displayName: metadata.displayName || '',
+        url: metadata.url?.default || '',
+        isActive: metadata.key === activeKey,
+        items: grandchildItems.length > 0 ? grandchildItems : null,
+      };
+    }),
+  );
+
+  if (!isRoot && childItems.length > 0) {
+    return [
+      {
+        key: parentKey,
+        displayName: 'Overview',
+        url: parentUrl,
+        isActive: parentKey === activeKey,
+        items: null,
+      },
+      ...childItems,
+    ];
+  }
+
+  return childItems;
+};
+
 export const getNavigationItems = cache(async () => {
   const context = getContext();
 
@@ -17,98 +81,12 @@ export const getNavigationItems = cache(async () => {
     return [];
   }
 
-  const data = await getClient().request(
-    `query Navigation($key: String, $locale: String) {
-      item: _Content(
-        where: { _metadata: { key: { eq: $key }, locale: { eq: $locale } } }
-      ) {
-        item {
-          ...SelectedItem
-        }
-      }
-    }
+  const path = await getClient().getPath({ key: context.key, locale: context.locale });
+  if (!path?.length) return [];
 
-    fragment SelectedItem on _IContent {
-      item: _link(type: PATH) {
-        item: _Content {
-          navigationItems: items {
-            ...NavigationItems
-          }
-        }
-      }
-    }
+  const rootUrl = path[0]._metadata?.url?.default || '';
+  const rootKey = path[0]._metadata?.key;
+  if (!rootKey || !rootUrl) return [];
 
-    fragment NavigationItems on _IContent {
-      item: _link(type: ITEMS) {
-        item: _Content(orderBy: { _metadata: { sortOrder: ASC } }) {
-          navigationItems: items {
-            ...NavigationItem
-          }
-        }
-      }
-    }
-
-    fragment NavigationItem on _IContent {
-      fields: _metadata {
-        key
-        displayName
-        url {
-          default
-        }
-        ... on IInstanceMetadata {
-          container
-        }
-      }
-    }`,
-    {
-      key: context.key,
-      locale: context.locale,
-    },
-    undefined, // Preview token
-    true, // Cache
-  );
-
-  return parseNavigationData(data, context.key);
+  return fetchChildItems(rootKey, rootUrl, context.locale, context.key, true);
 });
-
-function parseNavigationData(data: any, activeKey: string): NavigationItem[] {
-  if (!data) {
-    return [];
-  }
-
-  const groups = data.item.item.item.item.navigationItems;
-
-  const allItems = groups.flatMap(
-    (group: any) => group.item?.item?.navigationItems ?? [],
-  );
-
-  const childrenByContainer = new Map<string, any[]>();
-  for (const item of allItems) {
-    const container = item.fields.container;
-    if (!childrenByContainer.has(container)) {
-      childrenByContainer.set(container, []);
-    }
-    childrenByContainer.get(container)!.push(item);
-  }
-
-  function buildTree(parentKey: string): NavigationItem[] | null {
-    const children = childrenByContainer.get(parentKey);
-    if (!children?.length) return null;
-
-    return children.map((child: any) => {
-      const key = child.fields.key;
-      const items = buildTree(key);
-      const isActive = key === activeKey;
-      return {
-        key,
-        displayName: child.fields.displayName,
-        url: child.fields.url.default,
-        isActive,
-        items,
-      };
-    });
-  }
-
-  const rootContainer = allItems[0]?.fields.container;
-  return buildTree(rootContainer) ?? [];
-}

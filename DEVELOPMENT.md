@@ -36,51 +36,82 @@ You can also pass the `--help` flag to any command to see the flags and argument
 
 ## Versioning and release workflow
 
-### Create a pre-release
+This project uses [Changesets](https://github.com/changesets/changesets) for version management and releases.
 
-1. Create a `release/` branch.
+### Adding a changeset
 
-   - If you are releasing one package use the name `release/package-name@x.y.z`
-   - If you are releasing multiple packages, choose any other name
+When contributing a feature or bugfix, include a changeset to document the change:
 
-2. For every package that gets released, edit the package.json file with the new pre-release version
+```bash
+pnpm changeset
+```
 
-   - For example `0.1.0-alpha.1`
+Follow the prompts to:
 
-3. Push the release branch (`git push`)
-4. Go to GitHub and create one Draft release **for every released package**.
+1. Select the affected package(s) (`optimizely-cms-sdk`, `optimizely-cms-cli`)
+2. Choose the change type:
+   - `patch` for bug fixes
+   - `minor` for new features
+   - `major` for breaking changes
+3. Write a description (becomes the changelog entry)
 
-   - Tag: `<<package name>>@<<version>>`. E.g. `@optimizely/cms-cli@0.1.0`
-   - Release name (same as tag)
-   - Branch: choose the branch you have just created
+Commit the generated `.changeset/*.md` file with your changes.
 
-### Create more pre-release versions
+### Release process
 
-If the packages are not ready for release, and you need to create one more pre-release version of them:
+Releases are managed through GitHub Actions workflows. Changesets accumulate until you're ready to release.
 
-1. Checkout to the `release/` branch you created
-2. For every package that gets released, bump the version in package.json and create a new
-3. Push the branch and the tags
+#### Beta release (optional)
 
-### Publish the packages
+1. **Create version bump PR**
+   - Go to GitHub Actions → "Create Version Bump PR"
+   - Check "Pre-release mode (beta)"
+   - Run workflow
 
-When the packages are ready for release
+2. **Review and merge**
+   - Bot creates a PR that bumps versions (e.g., `2.1.0` → `2.2.0-beta.0`)
+   - Review the changes and merge to `main`
 
-1. For every package, edit the package.json with the release version.
-2. Push the branch to GitHub
-3. Go to GitHub and publish the releases
+3. **Publish to npm**
+   - Go to GitHub Actions → "Release Packages"
+   - Run workflow
+   - Packages publish with `@beta` tag
+   - Jira release created with `released: false`
 
-   - Add the newly created tags to each of the releases
+4. **Test and iterate**
+   - QA tests using `npm install @optimizely/cms-sdk@beta`
+   - For fixes, add changesets and repeat steps 1-3 (versions bump to `beta.1`, `beta.2`, etc.)
 
-4. Merge the PR to `main` branch
+#### Stable release
+
+1. **Create version bump PR**
+   - Go to GitHub Actions → "Create Version Bump PR"
+   - Uncheck "Pre-release mode (beta)"
+   - Run workflow
+
+2. **Review and merge**
+   - Bot creates a PR that bumps versions (e.g., `2.2.0-beta.1` → `2.2.0`)
+   - Review and merge to `main`
+
+3. **Publish to npm**
+   - Go to GitHub Actions → "Release Packages"
+   - Run workflow
+   - Packages publish with `@latest` tag
+   - Beta versions automatically deprecated
+   - Jira release updated to `released: true`
+
+#### Direct stable release (skip beta)
+
+Follow the stable release steps above. The version bump will go directly from the current version to the next stable version without a beta phase.
 
 ## Project structure
 
 This repository is a mono-repo, meaning that multiple packages and artifacts are in the same repository.
 
-```
+```text
 .
 ├── packages/
+│   ├── optimizely-cms-create-app/
 │   ├── optimizely-cms-cli/
 │   └── optimizely-cms-sdk/
 ├── samples/
@@ -96,5 +127,6 @@ This repository is a mono-repo, meaning that multiple packages and artifacts are
 
    - The `optimizely-cms-sdk` is the core library. Samples and the `optimizely-cms-cli` depend on this.
    - The `optimizely-cms-cli` is a CLI tool for managing the CMS.
+   - The `optimizely-cms-create-app` is a project scaffolding tool for creating new applications.
 
 2. The directory `samples` include are web applications developed to showcase the tools.
