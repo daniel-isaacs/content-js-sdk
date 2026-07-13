@@ -67,7 +67,7 @@ export async function getToken(clientId: string, clientSecret: string, host?: st
     .then(({ response, data, error }) => {
       if (!response.ok) {
         // In CMS production:
-        if (error?.code === 'invalid_client') {
+        if (error?.error === 'invalid_client' || error?.code === 'invalid_client') {
           throw new credentialErrors.InvalidCredentials();
         }
 
@@ -77,7 +77,6 @@ export async function getToken(clientId: string, clientSecret: string, host?: st
         }
 
         // Generic error message:
-
         throw new Error(
           'Something went wrong when trying to fetch token. Please try again',
         );

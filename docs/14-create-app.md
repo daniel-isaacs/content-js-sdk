@@ -1,11 +1,11 @@
 # Create App
 
-The `@optimizely/create-app` CLI tool scaffolds new Optimizely CMS projects or adds Optimizely to existing ones.
+The `@optimizely/cms-create-app` CLI tool scaffolds new Optimizely CMS projects or adds Optimizely to existing ones.
 
 ## Quick start
 
 ```bash
-npx @optimizely/create-app
+npx @optimizely/cms-create-app
 ```
 
 ## Modes
@@ -20,7 +20,7 @@ npx @optimizely/create-app
 
 Template mode projects come with the SDK already initialized. For fresh and scaffold modes, you need to create an initialization file and import it in your root layout.
 
-See the full guide in the [create-app README](../packages/create-opti-app/README.md#sdk-initialization).
+See the full guide in the [create-app README](../packages/optimizely-cms-create-app/README.md#sdk-initialization).
 
 ## Next steps
 

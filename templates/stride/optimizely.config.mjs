@@ -7,17 +7,19 @@ export default buildConfig({
     './components/contracts/*.ts',
   ],
   propertyGroups: [],
+  locale: ['en'],
   content: [
     {
-      key: 'StartPageContent',
-      displayName: 'Start Page',
+      key: 'home',
+      displayName: 'Home',
       contentType: 'StartPage',
+      locale: 'en',
     },
   ],
   applications: [
     {
-      key: 'stride_app',
-      entryPoint: 'StartPageContent',
+      key: 'stride',
+      entryPoint: 'home',
       displayName: 'Stride',
       type: 'website',
       isDefault: true,

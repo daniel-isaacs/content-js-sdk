@@ -111,7 +111,7 @@ This repository is a mono-repo, meaning that multiple packages and artifacts are
 ```text
 .
 ├── packages/
-│   ├── create-opti-app/
+│   ├── optimizely-cms-create-app/
 │   ├── optimizely-cms-cli/
 │   └── optimizely-cms-sdk/
 ├── samples/
@@ -127,6 +127,6 @@ This repository is a mono-repo, meaning that multiple packages and artifacts are
 
    - The `optimizely-cms-sdk` is the core library. Samples and the `optimizely-cms-cli` depend on this.
    - The `optimizely-cms-cli` is a CLI tool for managing the CMS.
-   - The `create-opti-app` is a project scaffolding tool for creating new applications.
+   - The `optimizely-cms-create-app` is a project scaffolding tool for creating new applications.
 
 2. The directory `samples` include are web applications developed to showcase the tools.

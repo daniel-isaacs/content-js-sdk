@@ -87,6 +87,20 @@ The CLI enforces this dependency chain during `config push`: contentTypes must e
 
 > Note: The programmatic (config-based) approach does not currently support updating applications. To update an application, you must first delete the existing application and its start page content from the CMS, then run the push command again.
 
+### Locales
+
+Add locales (language branches) to your configuration:
+
+```javascript
+export default buildConfig({
+  components: ['./src/components/**/*.tsx'],
+  locale: ['en-US', 'sv-SE', 'de', 'fi'],  // IETF BCP-47 tags
+  // ... other config
+});
+```
+
+Running `config push` creates missing locales and enables existing ones. Locales already enabled remain unchanged.
+
 ## Step 3. Change the "home" URL
 
 1. Go to your CMS &rarr; Content &rarr; Home
