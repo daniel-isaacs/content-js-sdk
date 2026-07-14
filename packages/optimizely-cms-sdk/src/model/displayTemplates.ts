@@ -9,7 +9,7 @@ export const EDITOR_TYPE = ['select', 'checkbox'] as const;
 
 type NodeType = (typeof NODE_TYPES)[number];
 
-type EditorType = (typeof EDITOR_TYPE)[number];
+type EditorType = (typeof EDITOR_TYPE)[number] | string;
 
 type NodeTemplate = {
   nodeType: NodeType;
@@ -41,7 +41,7 @@ type SettingsType = Record<
   string,
   {
     displayName: string;
-    editor: EditorType;
+    editor?: EditorType;
     sortOrder: number;
     choices: ChoiceType;
   }
@@ -84,4 +84,5 @@ export function parseDisplaySettings(
   }
 
   return result;
+
 }
