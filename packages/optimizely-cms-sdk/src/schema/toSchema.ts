@@ -146,11 +146,11 @@ function validateRichText(value: unknown, path: string[], errors: ValidationErro
     return;
   }
   const obj = value as Record<string, unknown>;
-  if (typeof obj.html !== 'string') {
-    addError(errors, [...path, 'html'], `Expected string, received ${typeOf(obj.html)}`, 'string', typeOf(obj.html));
+  if (obj.html !== null && typeof obj.html !== 'string') {
+    addError(errors, [...path, 'html'], `Expected string or null, received ${typeOf(obj.html)}`, 'string', typeOf(obj.html));
   }
-  if (typeof obj.json !== 'object' || obj.json === null) {
-    addError(errors, [...path, 'json'], `Expected object, received ${typeOf(obj.json)}`, 'object', typeOf(obj.json));
+  if (obj.json !== null && (typeof obj.json !== 'object')) {
+    addError(errors, [...path, 'json'], `Expected object or null, received ${typeOf(obj.json)}`, 'object', typeOf(obj.json));
   }
 }
 
@@ -166,8 +166,8 @@ function validateContentReference(value: unknown, path: string[], errors: Valida
     return;
   }
   const obj = value as Record<string, unknown>;
-  if (typeof obj.key !== 'string') {
-    addError(errors, [...path, 'key'], `Expected string, received ${typeOf(obj.key)}`, 'string', typeOf(obj.key));
+  if (obj.key !== null && typeof obj.key !== 'string') {
+    addError(errors, [...path, 'key'], `Expected string or null, received ${typeOf(obj.key)}`, 'string', typeOf(obj.key));
   }
 }
 
