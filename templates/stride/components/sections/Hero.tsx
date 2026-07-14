@@ -80,7 +80,7 @@ function ComponentWrapper({ children, node }: ComponentContainerProps) {
 
   if (node.type === 'ImageElement') {
     return (
-      <div className='flex items-center mt-[14rem]' {...pa(node)}>
+      <div className='flex items-center mt-[18rem] invisible md:visible' {...pa(node)}>
         {children}
       </div>
     );
