@@ -180,8 +180,8 @@ function validateContent(value: unknown, path: string[], errors: ValidationError
   if (typeof obj.__typename !== 'string') {
     addError(errors, [...path, '__typename'], `Expected string, received ${typeOf(obj.__typename)}`, 'string', typeOf(obj.__typename));
   }
-  if (typeof obj.__viewname !== 'string') {
-    addError(errors, [...path, '__viewname'], `Expected string, received ${typeOf(obj.__viewname)}`, 'string', typeOf(obj.__viewname));
+  if (obj.__viewname != null && typeof obj.__viewname !== 'string') {
+    addError(errors, [...path, '__viewname'], `Expected string or null, received ${typeOf(obj.__viewname)}`, 'string', typeOf(obj.__viewname));
   }
 }
 
