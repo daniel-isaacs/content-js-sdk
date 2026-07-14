@@ -7,6 +7,7 @@ import type {
   IntegerProperty,
   StringProperty,
 } from '../model/properties.js';
+import type { ContentProps } from '../infer.js';
 import { getContentType } from '../model/contentTypeRegistry.js';
 
 export type SchemaOptions = {
@@ -320,7 +321,7 @@ export function toSchema<T extends AnyContentType>(
 ) {
   const strict = options?.strict ?? false;
 
-  return new Schema<T>((data: unknown) => {
+  return new Schema<ContentProps<T>>((data: unknown) => {
     const errors: ValidationError[] = [];
 
     if (!validateBase(data, errors)) return errors;
