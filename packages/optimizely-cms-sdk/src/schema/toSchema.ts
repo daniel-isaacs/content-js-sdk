@@ -10,10 +10,24 @@ import type {
 import type { ContentProps } from '../infer.js';
 import { getContentType } from '../model/contentTypeRegistry.js';
 
+/**
+ * Options for schema validation.
+ *
+ * @property strict - When true, rejects any properties not defined in the content type.
+ *   Default is false (passthrough mode), which allows extra properties.
+ */
 export type SchemaOptions = {
   strict?: boolean;
 };
 
+/**
+ * Describes a single validation error.
+ *
+ * @property path - The property path where the error occurred, e.g. `['p_xhtml', 'html']`.
+ * @property message - A human-readable description of the error.
+ * @property expected - The expected type or value (e.g. `'string'`).
+ * @property received - The actual type or value that was found (e.g. `'number'`).
+ */
 export type ValidationError = {
   path: string[];
   message: string;
@@ -25,6 +39,10 @@ export type ParseSuccess<T> = { success: true; data: T };
 export type ParseFailure = { success: false; errors: ValidationError[] };
 export type ParseResult<T> = ParseSuccess<T> | ParseFailure;
 
+/**
+ * Error thrown by {@link Schema.parse} when validation fails.
+ * Contains the full list of {@link ValidationError}s.
+ */
 export class SchemaValidationError extends Error {
   constructor(public readonly errors: ValidationError[]) {
     super(`Validation failed with ${errors.length} error(s):\n${errors.map(e => `  [${e.path.join('.')}] ${e.message}`).join('\n')}`);
@@ -32,15 +50,56 @@ export class SchemaValidationError extends Error {
   }
 }
 
+/**
+ * A validation schema generated from a content type definition.
+ *
+ * Provides two methods to validate data:
+ * - {@link parse} — returns the validated data or throws {@link SchemaValidationError}.
+ * - {@link safeParse} — returns a result object, never throws.
+ *
+ * @typeParam T - The inferred data shape of the content type (via {@link ContentProps}).
+ */
 export class Schema<T = unknown> {
   constructor(private readonly validate: (data: unknown) => ValidationError[]) {}
 
+  /**
+   * Validates the data and returns it as type `T`.
+   * Throws {@link SchemaValidationError} if validation fails.
+   *
+   * @example
+   * ```ts
+   * try {
+   *   const page = schema.parse(data);
+   *   console.log(page.p_string);
+   * } catch (err) {
+   *   if (err instanceof SchemaValidationError) {
+   *     console.error(err.errors);
+   *   }
+   * }
+   * ```
+   */
   parse(data: unknown): T {
     const errors = this.validate(data);
     if (errors.length > 0) throw new SchemaValidationError(errors);
     return data as T;
   }
 
+  /**
+   * Validates the data and returns a result object. Never throws.
+   *
+   * @returns `{ success: true, data: T }` on success,
+   *   or `{ success: false, errors: ValidationError[] }` on failure.
+   *
+   * @example
+   * ```ts
+   * const result = schema.safeParse(data);
+   * if (result.success) {
+   *   console.log(result.data.p_string);
+   * } else {
+   *   result.errors.forEach(e => console.error(e.message));
+   * }
+   * ```
+   */
   safeParse(data: unknown): ParseResult<T> {
     const errors = this.validate(data);
     if (errors.length > 0) return { success: false, errors };
@@ -146,10 +205,10 @@ function validateRichText(value: unknown, path: string[], errors: ValidationErro
     return;
   }
   const obj = value as Record<string, unknown>;
-  if (obj.html !== null && typeof obj.html !== 'string') {
+  if (obj.html != null && typeof obj.html !== 'string') {
     addError(errors, [...path, 'html'], `Expected string or null, received ${typeOf(obj.html)}`, 'string', typeOf(obj.html));
   }
-  if (obj.json !== null && (typeof obj.json !== 'object')) {
+  if (obj.json != null && typeof obj.json !== 'object') {
     addError(errors, [...path, 'json'], `Expected object or null, received ${typeOf(obj.json)}`, 'object', typeOf(obj.json));
   }
 }
@@ -166,7 +225,7 @@ function validateContentReference(value: unknown, path: string[], errors: Valida
     return;
   }
   const obj = value as Record<string, unknown>;
-  if (obj.key !== null && typeof obj.key !== 'string') {
+  if (obj.key != null && typeof obj.key !== 'string') {
     addError(errors, [...path, 'key'], `Expected string or null, received ${typeOf(obj.key)}`, 'string', typeOf(obj.key));
   }
 }
@@ -177,8 +236,8 @@ function validateContent(value: unknown, path: string[], errors: ValidationError
     return;
   }
   const obj = value as Record<string, unknown>;
-  if (typeof obj.__typename !== 'string') {
-    addError(errors, [...path, '__typename'], `Expected string, received ${typeOf(obj.__typename)}`, 'string', typeOf(obj.__typename));
+  if (obj.__typename != null && typeof obj.__typename !== 'string') {
+    addError(errors, [...path, '__typename'], `Expected string or null, received ${typeOf(obj.__typename)}`, 'string', typeOf(obj.__typename));
   }
   if (obj.__viewname != null && typeof obj.__viewname !== 'string') {
     addError(errors, [...path, '__viewname'], `Expected string or null, received ${typeOf(obj.__viewname)}`, 'string', typeOf(obj.__viewname));
@@ -315,6 +374,47 @@ function validateBase(data: unknown, errors: ValidationError[]) {
   return true;
 }
 
+/**
+ * Generates a validation schema from a content type definition.
+ *
+ * The schema validates the structural correctness of content data (e.g. a GraphQL response)
+ * against the content type's property definitions. It checks:
+ * - **Type correctness** — each property value matches its expected type.
+ * - **Constraints** — `minimum`/`maximum`, `minLength`/`maxLength`, `pattern`, `enum`,
+ *   `minItems`/`maxItems`.
+ * - **Nested structures** — richText, contentReference, component, array, and experience
+ *   composition nodes are validated recursively.
+ *
+ * Base-level fields (`_id`, `__typename`, `_metadata`) are required.
+ * Top-level content properties are optional (null/undefined values are skipped).
+ * Sub-fields within complex properties (e.g. `html`/`json` in richText, `key` in
+ * contentReference) are also optional — validated only when present and non-null.
+ *
+ * @param ct - The content type definition or a registered {@link ContentType}.
+ * @param options - Optional settings. Use `{ strict: true }` to reject properties
+ *   not defined in the content type.
+ * @returns A {@link Schema} instance with `parse()` and `safeParse()` methods.
+ *
+ * @example
+ * ```ts
+ * import { toSchema } from '@optimizely/cms-sdk/schema';
+ * import { BlogPageCT } from './content-types/BlogPageCT';
+ *
+ * const schema = toSchema(BlogPageCT);
+ *
+ * // safeParse — returns a result object, never throws
+ * const result = schema.safeParse(graphqlResponse);
+ * if (result.success) {
+ *   console.log(result.data.title);
+ * }
+ *
+ * // parse — throws SchemaValidationError on failure
+ * const page = schema.parse(graphqlResponse);
+ *
+ * // strict mode — rejects extra properties not in the content type
+ * const strictSchema = toSchema(BlogPageCT, { strict: true });
+ * ```
+ */
 export function toSchema<T extends AnyContentType>(
   ct: T | ContentType<T>,
   options?: SchemaOptions,
