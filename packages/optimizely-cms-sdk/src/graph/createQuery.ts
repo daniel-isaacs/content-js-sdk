@@ -3,6 +3,7 @@ import { getContentType, RegistryEntry } from '../model/contentTypeRegistry.js';
 import {
   isBaseType,
   toBaseTypeFragmentKey,
+  stripSourcePrefix,
   DAM_ASSET_FRAGMENTS,
   FIXED_FRAGMENTS,
   getBaseTypeFragments,
@@ -151,8 +152,13 @@ const getParsedFragmentName = (
   contentType: RegistryEntry | undefined,
 ): string => {
   if (isBaseType(contentTypeName)) return toBaseTypeFragmentKey(contentTypeName);
-  if (contentType && isContract(contentType)) return `I${fragmentName}`;
-  return fragmentName;
+  // Namespaced external types (graph:, globalcontract:) resolve to the real Graph type, never the
+  // fragment-name `Property` suffix (Graph only generates `<X>Property` types for local components).
+  const bare = stripSourcePrefix(contentTypeName);
+  const onType = bare !== contentTypeName ? bare : fragmentName;
+  if (contentType && isContract(contentType))
+    return onType.startsWith('_') ? `_I${onType.slice(1)}` : `I${onType}`;
+  return onType;
 };
 
 const assembleFragment = (
@@ -209,7 +215,7 @@ export const createFragment = (
     expandContracts = DEFAULT_EXPAND_CONTRACTS,
     includeBaseFragments = true,
   } = options;
-  const fragmentName = `${contentTypeName}${suffix}`;
+  const fragmentName = `${stripSourcePrefix(contentTypeName)}${suffix}`;
 
   if (visited.has(fragmentName))
     return { fragments: [], includesDamAssetsFragments: false };
@@ -254,7 +260,9 @@ export const createFragment = (
     extraFragments.push(...propResult.extraFragments);
     includesDamAssetsFragments = propResult.includesDamAssetsFragments;
 
-    if (includeBaseFragments) {
+    // Namespaced external types don't implement _IContent — skip CMS base/content fragments.
+    const isNamespaced = stripSourcePrefix(contentTypeName) !== contentTypeName;
+    if (includeBaseFragments && !isNamespaced) {
       const baseType = 'baseType' in contentType ? (contentType as AnyContentType).baseType : undefined;
       const baseFragments = getBaseTypeFragments(baseType ?? '', contentTypeName);
       extraFragments.unshift(...baseFragments.extraFragments);
