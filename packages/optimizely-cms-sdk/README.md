@@ -56,6 +56,78 @@ Full guides and documentation in the main repository:
 - [Rendering (React)](../../docs/6-rendering-react.md) - Display content in React components
 - [Live Preview](../../docs/7-live-preview.md) - Enable real-time content editing
 
+### Schema Validation
+
+Validate content data (e.g. GraphQL responses) against your content type definitions at runtime using `toSchema()`.
+
+```typescript
+import { toSchema, SchemaValidationError } from '@optimizely/cms-sdk/schema';
+import { BlogPageCT } from './content-types/BlogPageCT';
+
+const schema = toSchema(BlogPageCT);
+```
+
+#### `safeParse()` — validate without throwing
+
+Returns `{ success: true, data }` or `{ success: false, errors }`. Use when you want to handle errors yourself.
+
+```typescript
+const result = schema.safeParse(graphqlResponse);
+
+if (result.success) {
+  // result.data is fully typed based on the content type definition
+  console.log(result.data.title);
+  console.log(result.data.p_heroImage);
+} else {
+  // result.errors is an array of ValidationError
+  result.errors.forEach(err => {
+    console.error(`[${err.path.join('.')}] ${err.message}`);
+  });
+}
+```
+
+#### `parse()` — validate or throw
+
+Returns the validated data, or throws `SchemaValidationError` on failure. Use when invalid data should stop execution.
+
+```typescript
+try {
+  const page = schema.parse(graphqlResponse);
+  console.log(page.title);
+} catch (err) {
+  if (err instanceof SchemaValidationError) {
+    console.error(`${err.errors.length} validation error(s)`);
+    err.errors.forEach(e => console.error(e.message));
+  }
+}
+```
+
+#### Strict mode
+
+By default, extra properties not defined in the content type are allowed (passthrough). Use `{ strict: true }` to reject them.
+
+```typescript
+const strictSchema = toSchema(BlogPageCT, { strict: true });
+
+const result = strictSchema.safeParse({
+  ...validData,
+  unknownField: 'value', // will cause validation to fail
+});
+```
+
+#### What gets validated
+
+| Check | Example |
+|---|---|
+| **Required base fields** | `_id`, `__typename`, `_metadata` must be present at root |
+| **Type correctness** | `p_integer` must be `number`, not `string` |
+| **Constraints** | `minimum`/`maximum`, `minLength`/`maxLength`, `pattern` |
+| **Enum values** | Value must be one of the allowed enum values |
+| **Array bounds** | `minItems`/`maxItems` |
+| **Nested structures** | richText, contentReference, component, array validated recursively |
+
+Top-level content properties (`p_string`, `p_xhtml`, etc.) are optional — `null` or `undefined` values are skipped. Sub-fields within complex types (e.g. `html`/`json` in richText, `key` in contentReference) are also optional and only validated when present and non-null.
+
 ### Advanced Features
 
 - [Experience](../../docs/8-experience.md) - Work with experiences and variations
