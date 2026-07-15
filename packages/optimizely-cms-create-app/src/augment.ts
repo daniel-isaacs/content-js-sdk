@@ -17,14 +17,19 @@ export async function augmentProject(options: ScaffoldOptions): Promise<void> {
   if (options.addSdk) deps.push(PACKAGES.sdk.name);
   if (options.addCli) devDeps.push(PACKAGES.cli.name);
 
+  let sdkInstalled = false;
+  let cliInstalled = false;
+
   if (!options.skipInstall && (deps.length > 0 || devDeps.length > 0)) {
     s.start('Installing packages...');
     try {
       if (deps.length > 0) {
         exec(getAddCommand(options.packageManager, deps, false), cwd);
+        sdkInstalled = true;
       }
       if (devDeps.length > 0) {
         exec(getAddCommand(options.packageManager, devDeps, true), cwd);
+        cliInstalled = true;
       }
       s.stop('Packages installed.');
     } catch {
@@ -72,7 +77,7 @@ export async function augmentProject(options: ScaffoldOptions): Promise<void> {
     }
   }
 
-  if (options.addCli) {
+  if (options.addCli && cliInstalled) {
     addScriptToPackageJson(cwd, 'opti-push', 'optimizely-cms-cli manifest push');
   }
 

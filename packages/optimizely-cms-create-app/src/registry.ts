@@ -24,7 +24,7 @@ export const FRAMEWORKS: FrameworkConfig[] = [
     key: 'tanstack',
     label: 'TanStack Start',
     detectPackage: '@tanstack/react-start',
-    createCommand: 'npx create-start@latest',
+    createCommand: 'npx @tanstack/create-start@latest',
   },
 ];
 
