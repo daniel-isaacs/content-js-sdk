@@ -17,9 +17,9 @@ export async function runPrompts(args: {
 
   let mode: Mode = 'create';
 
-  if (args.projectName) {
+  if (args.template) {
     mode = 'create';
-  } else if (existingProject) {
+  } else if (existingProject && !args.projectName) {
     const modeResult = await p.select({
       message: 'What would you like to do?',
       options: [

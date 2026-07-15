@@ -106,6 +106,10 @@ async function main(): Promise<void> {
     await createProject(options);
   } else if (options.mode === 'fresh') {
     const targetDir = await createFreshProject(options);
+    if (!fs.existsSync(targetDir)) {
+      console.error(`Project directory "${targetDir}" was not created. Please try again.`);
+      process.exit(1);
+    }
     process.chdir(targetDir);
     await augmentProject({
       mode: 'scaffold',
