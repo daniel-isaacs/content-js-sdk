@@ -13,11 +13,11 @@ You need a CMS instance with Graph installed. Both local and SaaS instances are 
 1. Log in to your Optimizely CMS admin interface.
 2. Navigate to **Settings** → **API Keys**.
 3. Create a new API key.
-5. Navigate to **Settings** → **Set Access Rights**.
-6. Ensure the root is selected and **Apply settings for all subitems** is checked.
-7. Add full permissions for the API key.
-8. Save access rights.
-4. Create a copy of `.env.example` and rename it to `.env`, then fill out all the environment variables.
+4. Navigate to **Settings** → **Set Access Rights**.
+5. Ensure the root is selected and **Apply settings for all subitems** is checked.
+6. Add full permissions for the API key.
+7. Save access rights.
+8. Create a copy of `.env.example` and rename it to `.env`, then fill out all the environment variables.
 
 Sync all configuration to the CMS:
 
@@ -56,3 +56,5 @@ bun dev
 ```
 
 Open [https://localhost:3000](https://localhost:3000) with your browser to see the result.
+
+> Note: If images are not showing up in the Stride template, it is often caused by browser extensions blocking them. Try disabling extensions that may interfere with page content, such as Ghostery.

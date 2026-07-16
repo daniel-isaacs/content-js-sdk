@@ -32,7 +32,7 @@ export default function Image({ content }: ImageComponentProps) {
       <img
         src={content.image?.url.default ?? ''}
         alt={content.alternativeText ?? ''}
-        className='object-cover object-top aspect-square'
+        className='mx-auto'
       />
     </CmsField>
   );
