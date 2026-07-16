@@ -55,6 +55,14 @@ export const toBaseTypeFragmentKey = (key: string): string =>
   isBaseType(key) ? `_${key.charAt(1).toUpperCase()}${key.slice(2)}` : key;
 
 /**
+ * Removes the namespace prefix from a content type key (e.g. `graph:Article` becomes `Article`).
+ * Used for GraphQL type names, which can't contain a colon.
+ * @param key - The content type key, possibly namespaced.
+ * @returns Key without the leading `namespace:` prefix.
+ */
+export const stripSourcePrefix = (key: string): string => key.replace(/^[a-z]+:/i, '');
+
+/**
  * Generates nested composition node structure for given depth.
  * @param depth - Current nesting level (0 = deepest).
  * @returns Nested fragment string.
