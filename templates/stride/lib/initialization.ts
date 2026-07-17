@@ -31,6 +31,11 @@ import Button, {
 import Product, { ProductPage } from '../components/pages/Product';
 import { EyebrowComponent } from '../components/blocks/Eyebrow';
 import Standard, { StandardPage } from '../components/pages/Standard';
+import News, { NewsPage } from '../components/pages/News';
+import TeaserCard, { TeaserCardComponent } from '../components/elements/TeaserCardComponent';
+import NewsEventsList, {
+  NewsEventsListContentType,
+} from '../components/blocks/NewsEventsList';
 
 export function initialize() {
   config({
@@ -41,12 +46,15 @@ export function initialize() {
     ProductPage,
     StandardPage,
     StartPage,
+    NewsPage,
     EyebrowComponent,
     HeroSection,
     ImageCardComponent,
     ButtonComponent,
     HeadingComponent,
     HorizontalRulerComponent,
+    TeaserCardComponent,
+    NewsEventsListContentType,
     ImageComponent,
     RichTextComponent,
     VideoComponent,
@@ -57,6 +65,9 @@ export function initialize() {
       ProductPage: Product,
       StandardPage: Standard,
       StartPage: Start,
+      NewsPage2: News,
+      NewsEvents: NewsEventsList,
+      TeaserCardComponent: TeaserCard,
       BlankSection,
       HeroSection: Hero,
       ImageCardElement: ImageCard,
