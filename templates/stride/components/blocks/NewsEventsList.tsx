@@ -31,7 +31,6 @@ export type NewsEventsListProps = {
 
 function NewsEventsList({ content }: NewsEventsListProps) {
   const { pa } = getPreviewUtils(content);
-  console.log(content);
   return (
     <div className='space-y-8'>
       {content.title && (

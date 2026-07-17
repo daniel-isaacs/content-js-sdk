@@ -35,18 +35,17 @@ export default function TeaserCard({ content }: TeaserCardComponentProps) {
     <article className='group flex gap-6'>
       <div className='grow basis-0'>
         <img
-          alt='Stride raises Series B to expand global fitness community'
           className='mb-4 rounded-lg object-cover max-h-60 w-full border border-white/5 '
           src={src(content.image)}
         />
       </div>
       <div className='grow basis-0'>
         <a href={content.link?.url.default ?? '#'}>
-          <h3 className='text-2xl md:text-2xl font-bold mb-4 tracking-tight !mb-2 group-hover:text-key1 transition-colors cursor-pointer'>
+          <h3 className='text-2xl font-bold tracking-tight !mb-2 group-hover:text-key1 transition-colors cursor-pointer'>
             {content.heading}
           </h3>
         </a>
-        <p className='text-lg leading-relaxed text-foreground mt-5 max-w-2xl max-w-2xl'>
+        <p className='text-lg leading-relaxed text-foreground mt-5 max-w-2xl'>
           {content.description}
         </p>
       </div>
