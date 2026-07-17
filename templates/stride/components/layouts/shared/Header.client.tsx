@@ -11,9 +11,11 @@ import type { SearchableContent } from '../../../lib/search';
 
 export const HeaderClient = ({
   navigationItems,
+  mobileNavItems,
   searchableContent,
 }: {
   navigationItems: NavigationItem[];
+  mobileNavItems: NavigationItem[];
   searchableContent: SearchableContent[];
 }) => {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
@@ -83,7 +85,7 @@ export const HeaderClient = ({
       <MobileMenu
         isOpen={mobileMenuOpen}
         onClose={() => setMobileMenuOpen(false)}
-        navigationItems={navigationItems}
+        navigationItems={mobileNavItems}
       />
 
       <SearchModal
