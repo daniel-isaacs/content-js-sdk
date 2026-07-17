@@ -3,7 +3,11 @@ import {
   initContentTypeRegistry,
   initDisplayTemplateRegistry,
 } from '@optimizely/cms-sdk';
-import { initReactComponentRegistry } from '@optimizely/cms-sdk/react/server';
+import {
+  configureAdapter,
+  initReactComponentRegistry,
+  ReactContextAdapter,
+} from '@optimizely/cms-sdk/react/server';
 import Start, { StartPage } from '../components/pages/Start';
 import BlankSection from '../components/sections/Blank';
 import ImageCard, { ImageCardComponent } from '../components/elements/ImageCard';
@@ -32,12 +36,20 @@ import Product, { ProductPage } from '../components/pages/Product';
 import { EyebrowComponent } from '../components/blocks/Eyebrow';
 import Standard, { StandardPage } from '../components/pages/Standard';
 import News, { NewsPage } from '../components/pages/News';
-import TeaserCard, { TeaserCardComponent } from '../components/elements/TeaserCardComponent';
+import TeaserCard, {
+  TeaserCardComponent,
+} from '../components/elements/TeaserCardComponent';
 import NewsEventsList, {
   NewsEventsListContentType,
 } from '../components/blocks/NewsEventsList';
+import EventCard, { EventCardComponent } from '../components/elements/EventCard';
+import EventCardsList, {
+  EventCardsListContentType,
+} from '../components/blocks/EventCardsList';
 
 export function initialize() {
+  configureAdapter(new ReactContextAdapter());
+
   config({
     apiKey: process.env.OPTIMIZELY_GRAPH_SINGLE_KEY!,
   });
@@ -58,6 +70,8 @@ export function initialize() {
     ImageComponent,
     RichTextComponent,
     VideoComponent,
+    EventCardComponent,
+    EventCardsListContentType,
   ]);
 
   initReactComponentRegistry({
@@ -77,6 +91,8 @@ export function initialize() {
       ImageElement: Image,
       RichTextElement: RichText,
       VideoElement: Video,
+      EventCardComponent: EventCard,
+      EventCardsList,
     },
   });
 
