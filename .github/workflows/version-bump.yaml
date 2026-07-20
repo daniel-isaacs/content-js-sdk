@@ -4,6 +4,15 @@ name: Create Version Bump PR
 on:
   workflow_dispatch:
     inputs:
+      package:
+        description: 'Package to version (others stay pending)'
+        type: choice
+        default: all
+        options:
+          - all
+          - '@optimizely/cms-create-app'
+          - '@optimizely/cms-sdk'
+          - '@optimizely/cms-cli'
       pre_release:
         description: 'Pre-release mode (beta)'
         type: boolean
@@ -42,7 +51,7 @@ jobs:
       - name: Create Version PR
         uses: changesets/action@v1
         with:
-          version: pnpm changeset version
+          version: bash scripts/version-selective.sh "${{ inputs.package }}"
           commit: "chore(release): version packages"
           title: "chore(release): version packages"
         env:
