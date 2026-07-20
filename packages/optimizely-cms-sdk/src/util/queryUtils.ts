@@ -9,7 +9,7 @@ import {
   getContentTypeByBaseType,
   RegistryEntry,
 } from '../model/contentTypeRegistry.js';
-import { CONTENT_URL_FRAGMENT, getKeyName, isBaseType } from './baseTypeUtil.js';
+import { CONTENT_URL_FRAGMENT, getKeyName, isBaseType, stripSourcePrefix } from './baseTypeUtil.js';
 import { AnyProperty } from '../model/properties.js';
 import { checkTypeConstraintIssues } from './fragmentConstraintChecks.js';
 import { createFragment } from '../graph/createQuery.js';
@@ -196,7 +196,7 @@ const handleComponentProperty: PropertyHandler = (
   const key = (property as any).contentType.key;
 
   const nameInFragment = `${rootName}${suffix}__${name}:${name}`;
-  const fragmentName = `${key}Property`;
+  const fragmentName = `${stripSourcePrefix(key)}Property`;
   const fields = [`${nameInFragment} { ...${fragmentName} }`];
   const result = createFragment(key, visited, 'Property', {
     damEnabled,
@@ -249,7 +249,7 @@ const handleContentProperty: PropertyHandler = (
 
   const subfields = allowed.map(type => {
     const key = getKeyName(type);
-    return `...${key === '_self' ? rootName : key}`;
+    return `...${key === '_self' ? rootName : stripSourcePrefix(key)}`;
   });
   const uniqueSubfields = ['__typename', ...new Set(subfields)].join(' ');
   const fields = [`${nameInFragment} { ${uniqueSubfields} }`];
@@ -388,6 +388,9 @@ export const convertProperty: PropertyHandler = (
   visited: Set<string>,
   options: FragmentOptions = {},
 ) => {
+  // Remove the namespace prefix (e.g. `graph:`) from rootName so field aliases
+  // (`{rootName}__{field}`) match the GraphQL __typename, which has no prefix.
+  rootName = stripSourcePrefix(rootName);
   const { maxFragmentThreshold = DEFAULT_MAX_FRAGMENT_THRESHOLD } = options;
   const result = convertPropertyField(name, property, rootName, suffix, visited, options);
 
