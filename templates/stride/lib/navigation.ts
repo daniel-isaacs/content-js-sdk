@@ -28,6 +28,7 @@ const fetchChildItems = async (
   locale: string,
   activeKey: string,
   isRoot: boolean = false,
+  skipOverview: boolean = true,
 ): Promise<NavigationItem[]> => {
   const items = await getClient().getItems({ key: parentKey, locale });
 
@@ -46,6 +47,8 @@ const fetchChildItems = async (
         metadata.url?.default || '',
         locale,
         activeKey,
+        false,
+        skipOverview,
       );
 
       return {
@@ -58,7 +61,7 @@ const fetchChildItems = async (
     }),
   );
 
-  if (!isRoot && childItems.length > 0) {
+  if (!isRoot && childItems.length > 0 && !skipOverview) {
     return [
       {
         key: parentKey,
@@ -74,7 +77,7 @@ const fetchChildItems = async (
   return childItems;
 };
 
-export const getNavigationItems = cache(async () => {
+export const getNavigationItems = cache(async (skipOverview: boolean = true) => {
   const context = getContext();
 
   if (!context?.key || !context?.locale) {
@@ -88,5 +91,14 @@ export const getNavigationItems = cache(async () => {
   const rootKey = path[0]._metadata?.key;
   if (!rootKey || !rootUrl) return [];
 
-  return fetchChildItems(rootKey, rootUrl, context.locale, context.key, true);
+  return fetchChildItems(
+    rootKey,
+    rootUrl,
+    context.locale,
+    context.key,
+    true,
+    skipOverview,
+  );
 });
+
+export const getMobileNavigationItems = cache(() => getNavigationItems(false));
