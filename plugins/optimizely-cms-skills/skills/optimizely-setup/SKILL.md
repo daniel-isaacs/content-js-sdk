@@ -1,50 +1,75 @@
 ---
 name: optimizely-setup
-description: This skill should be used when the user asks to "set up Optimizely CMS SDK", "initialize the SDK from scratch", "configure the CMS client", "add content delivery", "integrate Optimizely CMS", "start a headless CMS project with Optimizely", "install the SDK", or mentions setting up the Optimizely CMS JavaScript SDK in a new project.
+description: This skill should be used when the user asks to "set up Optimizely CMS SDK", "initialize the SDK from scratch", "configure the CMS client", "add content delivery", "integrate Optimizely CMS", "start a headless CMS project with Optimizely", "install the SDK", "create an Optimizely project", or mentions setting up the Optimizely CMS JavaScript SDK in a new or existing project.
 ---
 
 # Setup Optimizely CMS SDK
 
-Guide the user through setting up the Optimizely CMS JavaScript SDK in their project.
+Guide the user through setting up the Optimizely CMS JavaScript SDK using the `@optimizely/cms-create-app` CLI tool.
 
 ## Steps
 
-1. **Detect package manager** - Check which package manager is used (npm, pnpm, yarn)
-2. **Install packages** - Install @optimizely/cms-sdk and @optimizely/cms-cli
-3. **Create .env file** - Create environment variables file with placeholders
-4. **Create config file** - Create optimizely.config.mjs with basic configuration
-5. **Add .env to .gitignore** - Ensure .env is not committed
-6. **Verify installation** - Test the CLI connection
+1. **Determine setup mode** - Ask whether the user wants to create a new project or add SDK to an existing one
+2. **Run create-app** - Execute the CLI tool with appropriate options
+3. **Configure credentials** - Guide the user to fill in `.env` with their CMS credentials
+4. **Verify installation** - Test the CLI connection
 
 ## Implementation
 
-### 1. Detect Package Manager
+### 1. Determine Setup Mode
 
-Check for lock files to determine the package manager:
+Ask the user which scenario applies:
+
+- **New project from template**: Create a project using a pre-built Optimizely template (Next.js Starter, Next.js Stride, Next.js Alloy, or TanStack Start)
+- **Fresh project**: Scaffold a brand-new Next.js or TanStack Start project, then automatically add Optimizely SDK
+- **Existing project**: Add Optimizely CMS SDK to a project that already exists in the current directory
+
+### 2. Run create-app
+
+Based on the user's choice, run the appropriate command:
+
+**New project from template:**
 
 ```bash
-if [ -f "pnpm-lock.yaml" ]; then
-  echo "pnpm"
-elif [ -f "yarn.lock" ]; then
-  echo "yarn"
-elif [ -f "package-lock.json" ]; then
-  echo "npm"
-else
-  echo "npm"
-fi
+npx @optimizely/cms-create-app my-project --template <template-name>
 ```
 
-### 2. Install Packages
+Available templates:
+- `nextjs-starter` — Minimal Next.js + Optimizely CMS
+- `nextjs-stride` — Full demo site with Tailwind
+- `nextjs-alloy` — Full demo site with Tailwind
+- `tanstack-starter` — TanStack Start + Optimizely CMS
 
-Based on the detected package manager, install the required packages:
+Optional flags:
+- `--pm <npm|pnpm|yarn>` — Specify package manager
+- `--skip-install` — Skip dependency installation
 
-- **pnpm**: `pnpm add @optimizely/cms-sdk && pnpm add -D @optimizely/cms-cli`
-- **yarn**: `yarn add @optimizely/cms-sdk && yarn add -D @optimizely/cms-cli`
-- **npm**: `npm install @optimizely/cms-sdk && npm install -D @optimizely/cms-cli`
+**Fresh project (interactive):**
 
-### 3. Create .env File
+```bash
+npx @optimizely/cms-create-app
+```
 
-Create `.env` file if it doesn't exist, with minimal required Optimizely environment variables:
+The CLI will prompt the user to choose a framework (Next.js or TanStack Start), then create the project and add Optimizely SDK automatically.
+
+**Existing project:**
+
+Run the CLI from within the project directory (where `package.json` exists). The CLI detects the existing project and offers the "Add Optimizely CMS to this project" option, which:
+
+- Installs `@optimizely/cms-sdk` and `@optimizely/cms-cli`
+- Creates `optimizely.config.mjs`
+- Creates `.env` from template
+- Creates `src/lib/optimizely.ts` client helper
+- Creates catch-all page route (Next.js only)
+- Adds `opti-push` script to `package.json`
+
+```bash
+npx @optimizely/cms-create-app
+```
+
+### 3. Configure Credentials
+
+After the CLI finishes, guide the user to fill in the `.env` file with their CMS credentials:
 
 ```ini
 # Base URL of your CMS instance
@@ -72,57 +97,7 @@ OPTIMIZELY_GRAPH_SINGLE_KEY=
   - `OPTIMIZELY_CMS_API_URL=https://api.cmstest.optimizely.com`
   - `OPTIMIZELY_GRAPH_GATEWAY=https://staging.cg.optimizely.com/`
 
-### 4. Create Configuration File
-
-First, ask the user if they want to set up property groups to organize their content type fields in the CMS editor.
-
-**Property groups** help organize related content type properties together (e.g., SEO fields, metadata, layout settings). They're optional but useful for keeping the CMS editor organized.
-
-If the user wants property groups, create `optimizely.config.mjs` with example groups:
-
-```javascript
-import { buildConfig } from '@optimizely/cms-sdk';
-
-export default buildConfig({
-  components: ['./src/components/**/*.tsx'],
-  propertyGroups: [
-    {
-      key: 'seo',
-      displayName: 'SEO',
-      sortOrder: 1,
-    },
-    {
-      key: 'meta',
-      displayName: 'Metadata',
-      sortOrder: 2,
-    },
-  ],
-});
-```
-
-If they don't need property groups, create the basic configuration:
-
-```javascript
-import { buildConfig } from '@optimizely/cms-sdk';
-
-export default buildConfig({
-  components: ['./src/components/**/*.tsx'],
-});
-```
-
-Adjust the `components` path based on the project structure (check if src/ exists, otherwise use appropriate path like `./components/**/*.tsx` or `./app/components/**/*.tsx`).
-
-### 5. Add .env to .gitignore
-
-Check if `.gitignore` exists and contains `.env`. If not, add it:
-
-```bash
-if ! grep -q "^\.env$" .gitignore 2>/dev/null; then
-  echo ".env" >> .gitignore
-fi
-```
-
-### 6. Verify Installation
+### 4. Verify Installation
 
 Guide user to test the connection:
 
@@ -138,7 +113,7 @@ npx @optimizely/cms-cli login
 2. Verify all required variables are set (see "All Available Environment Variables" below)
 3. Retry the login command
 
-### 7. Add Missing Environment Variables (On Request)
+### 5. Add Missing Environment Variables (On Request)
 
 When the user requests to "add all missing environment variables" or "add all possible variables", or when troubleshooting connection issues, reference this complete list of available environment variables:
 
@@ -199,8 +174,9 @@ OPTIMIZELY_CMS_API_URL=
 ## Next Steps
 
 After setup, inform the user they can:
+- Add `import '@/lib/optimizely'` to their root layout
 - Define content types using TypeScript in their components
-- Sync types to CMS using `npx @optimizely/cms-cli push`
+- Sync types to CMS using `npx @optimizely/cms-cli push` or `npm run opti-push`
 - Fetch content using the SDK's client utilities
 
 ## References
