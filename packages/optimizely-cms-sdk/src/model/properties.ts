@@ -70,30 +70,32 @@ export type FloatProperty = BaseProperty & {
   maximum?: number;
 } & WithEnum<number>;
 
+type BaseContentReferenceProperty = BaseProperty & {
+  type: 'contentReference';
+  contentType?: AnyContentType | string;
+};
+
 export type ContentReferenceProperty =
-  | (BaseProperty & {
-      type: 'contentReference';
-      contentType?: AnyContentType | string;
+  | (BaseContentReferenceProperty & {
       allowedTypes: PermittedTypes[];
       restrictedTypes?: PermittedTypes[];
     })
-  | (BaseProperty & {
-      type: 'contentReference';
-      contentType?: AnyContentType | string;
+  | (BaseContentReferenceProperty & {
       allowedTypes?: PermittedTypes[];
       restrictedTypes: PermittedTypes[];
     });
 
+type BaseContentProperty = BaseProperty & {
+  type: 'content';
+  contentType?: AnyContentType | string;
+};
+
 export type ContentProperty =
-  | (BaseProperty & {
-      type: 'content';
-      contentType?: AnyContentType | string;
+  | (BaseContentProperty & {
       allowedTypes: PermittedTypes[];
       restrictedTypes?: PermittedTypes[];
     })
-  | (BaseProperty & {
-      type: 'content';
-      contentType?: AnyContentType | string;
+  | (BaseContentProperty & {
       allowedTypes?: PermittedTypes[];
       restrictedTypes: PermittedTypes[];
     });
