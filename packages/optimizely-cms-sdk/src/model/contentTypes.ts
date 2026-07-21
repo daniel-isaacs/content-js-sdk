@@ -39,6 +39,7 @@ export type SuppliedContractValues<P extends PropertiesRecord = PropertiesRecord
   key: string;
   displayName: string;
   properties?: P;
+  baseType?: never;
 };
 
 type InnerContractValues = {
@@ -67,30 +68,39 @@ type MergedPropertiesType<T extends AnyContentType> = ('extends' extends keyof T
   ('properties' extends keyof T ? T['properties'] : {});
 
 /** Represents the Page type  in CMS */
-export type PageContentType = BaseContentType & {
-  baseType: '_page';
-  mayContainTypes?: Array<
-    | ContentType<PageContentType | ExperienceContentType | FolderContentType>
-    | '_self'
-    | string
-  >;
-};
+export type PageContentType = Omit<
+  BaseContentType & {
+    baseType: '_page';
+    mayContainTypes?: Array<
+      | ContentType<PageContentType | ExperienceContentType | FolderContentType>
+      | '_self'
+      | string
+    >;
+  },
+  'compositionBehaviors'
+>;
 
 /** Represents the Experience type  in CMS */
-export type ExperienceContentType = BaseContentType & {
-  baseType: '_experience';
-  mayContainTypes?: Array<
-    | ContentType<PageContentType | ExperienceContentType | FolderContentType>
-    | '_self'
-    | string
-  >;
-};
+export type ExperienceContentType = Omit<
+  BaseContentType & {
+    baseType: '_experience';
+    mayContainTypes?: Array<
+      | ContentType<PageContentType | ExperienceContentType | FolderContentType>
+      | '_self'
+      | string
+    >;
+  },
+  'compositionBehaviors'
+>;
 
 /** Represents the Folder (Used in the asset panel to organizing content and not in Graph) type in CMS */
-export type FolderContentType = BaseContentType & {
-  baseType: '_folder';
-  mayContainTypes?: Array<ContentType<AnyContentType> | '_self' | string>;
-};
+export type FolderContentType = Omit<
+  BaseContentType & {
+    baseType: '_folder';
+    mayContainTypes?: Array<ContentType<AnyContentType> | '_self' | string>;
+  },
+  'compositionBehaviors'
+>;
 
 /** Represents the "Component" type (also called "Block") in CMS */
 export type ComponentContentType = BaseContentType & {
@@ -100,14 +110,20 @@ export type ComponentContentType = BaseContentType & {
 };
 
 /** This content type is used only internally */
-export type SectionContentType = BaseContentType & {
-  baseType: '_section';
-};
+export type SectionContentType = Omit<
+  BaseContentType & {
+    baseType: '_section';
+  },
+  'compositionBehaviors'
+>;
 
 /** Represents a "Media" content type (Image, Media, Video) */
-export type MediaContentType = BaseContentType & {
-  baseType: MediaStringTypes;
-};
+export type MediaContentType = Omit<
+  BaseContentType & {
+    baseType: MediaStringTypes;
+  },
+  'compositionBehaviors'
+>;
 
 /** All possible content types */
 export type AnyContentType =

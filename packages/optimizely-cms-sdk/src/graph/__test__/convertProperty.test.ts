@@ -28,9 +28,9 @@ describe('createFragment > Fragment threshold warning', () => {
     properties: {
       contentArea: {
         type: 'content',
+        restrictedTypes: [],
       },
     },
-    compositionBehaviors: ['sectionEnabled'],
   });
 
   beforeAll(() => {

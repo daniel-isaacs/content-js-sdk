@@ -424,7 +424,7 @@ describe('createFragment() with self references', () => {
       key: 'r1',
       displayName: 'R1',
       baseType: '_component',
-      properties: { p1: { type: 'content' } },
+      properties: { p1: { type: 'content', restrictedTypes: [] } },
     });
 
     initContentTypeRegistry([r1]);

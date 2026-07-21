@@ -13,7 +13,7 @@ describe('createFragment() with damEnabled for contentReference properties', () 
       displayName: 'CT1',
       baseType: '_page',
       properties: {
-        image: { type: 'contentReference' },
+        image: { type: 'contentReference', allowedTypes: ['*'] },
       },
     });
     initContentTypeRegistry([ct1]);
@@ -54,7 +54,7 @@ describe('createFragment() with damEnabled for contentReference properties', () 
       displayName: 'CT1',
       baseType: '_page',
       properties: {
-        image: { type: 'contentReference' },
+        image: { type: 'contentReference', allowedTypes: ['*'] },
       },
     });
     initContentTypeRegistry([ct1]);
@@ -96,7 +96,7 @@ describe('createFragment() with damEnabled for contentReference properties', () 
       displayName: 'CT1',
       baseType: '_page',
       properties: {
-        images: { type: 'array', items: { type: 'contentReference' } },
+        images: { type: 'array', items: { type: 'contentReference', allowedTypes: ['*'] } },
       },
     });
     initContentTypeRegistry([ct1]);
@@ -129,7 +129,7 @@ describe('createFragment() with damEnabled for contentReference properties', () 
       displayName: 'CT1',
       baseType: '_page',
       properties: {
-        images: { type: 'array', items: { type: 'contentReference' } },
+        images: { type: 'array', items: { type: 'contentReference', allowedTypes: ['*'] } },
       },
     });
     initContentTypeRegistry([ct1]);
@@ -165,7 +165,7 @@ describe('createFragment() with damEnabled for contentReference properties', () 
       displayName: 'CTBlock',
       baseType: '_component',
       properties: {
-        image: { type: 'contentReference' },
+        image: { type: 'contentReference', allowedTypes: ['*'] },
       },
     });
     const ct1 = contentType({
@@ -219,7 +219,7 @@ describe('createFragment() with damEnabled for contentReference properties', () 
       displayName: 'CTRef',
       baseType: '_component',
       properties: {
-        image: { type: 'contentReference' },
+        image: { type: 'contentReference', allowedTypes: ['*'] },
       },
     });
     const ct1 = contentType({
@@ -342,7 +342,7 @@ describe('createSingleContentQuery() with damEnabled', () => {
       displayName: 'CT1',
       baseType: '_page',
       properties: {
-        image: { type: 'contentReference' },
+        image: { type: 'contentReference', allowedTypes: ['*'] },
       },
     });
     initContentTypeRegistry([ct1]);
@@ -360,7 +360,7 @@ describe('createSingleContentQuery() with damEnabled', () => {
       displayName: 'CT1',
       baseType: '_page',
       properties: {
-        image: { type: 'contentReference' },
+        image: { type: 'contentReference', allowedTypes: ['*'] },
       },
     });
     initContentTypeRegistry([ct1]);
@@ -384,7 +384,7 @@ describe('createMultipleContentQuery() with damEnabled', () => {
       displayName: 'CT1',
       baseType: '_page',
       properties: {
-        image: { type: 'contentReference' },
+        image: { type: 'contentReference', allowedTypes: ['*'] },
       },
     });
     initContentTypeRegistry([ct1]);
@@ -401,7 +401,7 @@ describe('createMultipleContentQuery() with damEnabled', () => {
       displayName: 'CT1',
       baseType: '_page',
       properties: {
-        image: { type: 'contentReference' },
+        image: { type: 'contentReference', allowedTypes: ['*'] },
       },
     });
     initContentTypeRegistry([ct1]);

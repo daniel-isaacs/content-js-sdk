@@ -323,8 +323,8 @@ function validateProperty(value: unknown, property: AnyProperty, path: string[],
       const resolved = typeof property.contentType === 'string'
         ? getContentType(property.contentType)
         : property.contentType;
-      if (resolved && 'baseType' in resolved) {
-        validateComponent(value, resolved, path, errors, new Set(visited));
+      if (resolved && 'baseType' in resolved && resolved.baseType) {
+        validateComponent(value, resolved as AnyContentType, path, errors, new Set(visited));
       }
       break;
     }
@@ -420,6 +420,7 @@ export function toSchema<T extends AnyContentType>(
   options?: SchemaOptions,
 ) {
   const strict = options?.strict ?? false;
+  const baseType = (ct as AnyContentType).baseType;
 
   return new Schema<ContentProps<T>>((data: unknown) => {
     const errors: ValidationError[] = [];
@@ -441,14 +442,14 @@ export function toSchema<T extends AnyContentType>(
       }
     }
 
-    if (ct.baseType === '_experience') {
+    if (baseType === '_experience') {
       knownKeys.add('composition');
       if (obj.composition !== null && obj.composition !== undefined) {
         validateExperienceNode(obj.composition, ['composition'], errors);
       }
     }
 
-    if (ct.baseType === '_section') {
+    if (baseType === '_section') {
       knownKeys.add('key');
       knownKeys.add('nodes');
       if (typeof obj.key !== 'string') {
