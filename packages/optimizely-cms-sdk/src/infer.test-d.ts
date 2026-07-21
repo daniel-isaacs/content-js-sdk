@@ -28,7 +28,7 @@ test('ContentProps works for basic properties', () => {
       body: { type: 'richText' },
       price: { type: 'float' },
       units: { type: 'integer' },
-      image: { type: 'contentReference' },
+      image: { type: 'contentReference', allowedTypes: ['*'] },
     },
   });
 
@@ -55,7 +55,7 @@ test('ContentProps works for array properties', () => {
       body: { type: 'array', items: { type: 'richText' } },
       price: { type: 'array', items: { type: 'float' } },
       units: { type: 'array', items: { type: 'integer' } },
-      image: { type: 'array', items: { type: 'contentReference' } },
+      image: { type: 'array', items: { type: 'contentReference', allowedTypes: ['*'] } },
     },
   });
 
@@ -74,7 +74,7 @@ test('ContentProps works for component properties', () => {
     displayName: 'Hero',
     baseType: '_component',
     properties: {
-      image: { type: 'contentReference' },
+      image: { type: 'contentReference', allowedTypes: ['*'] },
     },
   });
 
