@@ -67,8 +67,11 @@ type MergedPropertiesType<T extends AnyContentType> = ('extends' extends keyof T
 : {}) &
   ('properties' extends keyof T ? T['properties'] : {});
 
+/** Utility type for content types that don't support composition behaviors */
+type SkipCompositionBehaviors<T> = Omit<T, 'compositionBehaviors'>;
+
 /** Represents the Page type  in CMS */
-export type PageContentType = Omit<
+export type PageContentType = SkipCompositionBehaviors<
   BaseContentType & {
     baseType: '_page';
     mayContainTypes?: Array<
@@ -76,12 +79,11 @@ export type PageContentType = Omit<
       | '_self'
       | string
     >;
-  },
-  'compositionBehaviors'
+  }
 >;
 
 /** Represents the Experience type  in CMS */
-export type ExperienceContentType = Omit<
+export type ExperienceContentType = SkipCompositionBehaviors<
   BaseContentType & {
     baseType: '_experience';
     mayContainTypes?: Array<
@@ -89,17 +91,15 @@ export type ExperienceContentType = Omit<
       | '_self'
       | string
     >;
-  },
-  'compositionBehaviors'
+  }
 >;
 
 /** Represents the Folder (Used in the asset panel to organizing content and not in Graph) type in CMS */
-export type FolderContentType = Omit<
+export type FolderContentType = SkipCompositionBehaviors<
   BaseContentType & {
     baseType: '_folder';
     mayContainTypes?: Array<ContentType<AnyContentType> | '_self' | string>;
-  },
-  'compositionBehaviors'
+  }
 >;
 
 /** Represents the "Component" type (also called "Block") in CMS */
@@ -110,19 +110,17 @@ export type ComponentContentType = BaseContentType & {
 };
 
 /** This content type is used only internally */
-export type SectionContentType = Omit<
+export type SectionContentType = SkipCompositionBehaviors<
   BaseContentType & {
     baseType: '_section';
-  },
-  'compositionBehaviors'
+  }
 >;
 
 /** Represents a "Media" content type (Image, Media, Video) */
-export type MediaContentType = Omit<
+export type MediaContentType = SkipCompositionBehaviors<
   BaseContentType & {
     baseType: MediaStringTypes;
-  },
-  'compositionBehaviors'
+  }
 >;
 
 /** All possible content types */

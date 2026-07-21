@@ -90,7 +90,7 @@ test('content/contentReference require allowedTypes or restrictedTypes', () => {
     },
   });
 
-  // ✅ Valid with allowedTypes
+  // Valid with allowedTypes
   contentType({
     key: 'page',
     displayName: 'Page',
@@ -100,7 +100,7 @@ test('content/contentReference require allowedTypes or restrictedTypes', () => {
     },
   });
 
-  // ✅ Valid with restrictedTypes
+  // Valid with restrictedTypes
   contentType({
     key: 'page',
     displayName: 'Page',
@@ -110,7 +110,7 @@ test('content/contentReference require allowedTypes or restrictedTypes', () => {
     },
   });
 
-  // ✅ Valid with both
+  // Valid with both
   contentType({
     key: 'page',
     displayName: 'Page',
