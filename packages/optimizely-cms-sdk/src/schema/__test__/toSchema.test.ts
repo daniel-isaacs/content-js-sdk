@@ -154,7 +154,7 @@ describe('toSchema', () => {
         key: 'RefTest',
         baseType: '_component',
         displayName: 'Ref Test',
-        properties: { image: { type: 'contentReference' } },
+        properties: { image: { type: 'contentReference', allowedTypes: ['*'] } },
       });
       const schema = toSchema(ct);
       const result = schema.safeParse({
@@ -173,7 +173,7 @@ describe('toSchema', () => {
         key: 'ContentTest',
         baseType: '_component',
         displayName: 'Content Test',
-        properties: { area: { type: 'content' } },
+        properties: { area: { type: 'content', allowedTypes: ['*'] } },
       });
       const schema = toSchema(ct);
       const result = schema.safeParse({

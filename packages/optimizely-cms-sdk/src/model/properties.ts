@@ -26,25 +26,10 @@ type WithEnum<T> = {
 
 export type ArrayProperty<T extends ArrayItems> = BaseProperty & {
   type: 'array';
-  items: T;
+  items: Exclude<T, ArrayProperty<any>>;
   minItems?: number;
   maxItems?: number;
 };
-
-export type ArrayItems =
-  | StringProperty
-  | BooleanProperty
-  | BinaryProperty
-  | JsonProperty
-  | DateTimeProperty
-  | RichTextProperty
-  | UrlProperty
-  | IntegerProperty
-  | FloatProperty
-  | ContentReferenceProperty
-  | ContentProperty
-  | ComponentProperty<AnyContentType>
-  | LinkProperty;
 
 /** Represents the content type property "String" */
 export type StringProperty = BaseProperty & {
@@ -85,19 +70,50 @@ export type FloatProperty = BaseProperty & {
   maximum?: number;
 } & WithEnum<number>;
 
-export type ContentReferenceProperty = BaseProperty & {
+type BaseContentReferenceProperty = BaseProperty & {
   type: 'contentReference';
   contentType?: AnyContentType | string;
-  allowedTypes?: PermittedTypes[];
-  restrictedTypes?: PermittedTypes[];
 };
 
-export type ContentProperty = BaseProperty & {
+export type ContentReferenceProperty =
+  | (BaseContentReferenceProperty & {
+      allowedTypes: PermittedTypes[];
+      restrictedTypes?: PermittedTypes[];
+    })
+  | (BaseContentReferenceProperty & {
+      allowedTypes?: PermittedTypes[];
+      restrictedTypes: PermittedTypes[];
+    });
+
+type BaseContentProperty = BaseProperty & {
   type: 'content';
   contentType?: AnyContentType | string;
-  allowedTypes?: PermittedTypes[];
-  restrictedTypes?: PermittedTypes[];
 };
+
+export type ContentProperty =
+  | (BaseContentProperty & {
+      allowedTypes: PermittedTypes[];
+      restrictedTypes?: PermittedTypes[];
+    })
+  | (BaseContentProperty & {
+      allowedTypes?: PermittedTypes[];
+      restrictedTypes: PermittedTypes[];
+    });
+
+export type ArrayItems =
+  | StringProperty
+  | BooleanProperty
+  | BinaryProperty
+  | JsonProperty
+  | DateTimeProperty
+  | RichTextProperty
+  | UrlProperty
+  | IntegerProperty
+  | FloatProperty
+  | ContentReferenceProperty
+  | ContentProperty
+  | ComponentProperty<AnyContentType>
+  | LinkProperty;
 
 /**
  * Reprensents the content type property "Component".
