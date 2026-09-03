@@ -25,6 +25,14 @@ import {
 } from '../telemetry/metrics.js';
 import { GraphMissingContentTypeError, GraphQueryGenerationError } from './error.js';
 import {
+  type FilterShape,
+  type VariationMode,
+  getFilterVarDecls,
+  getFilterWhereClause,
+  getVariationVarDecls,
+  getVariationClause,
+} from './filters.js';
+import {
   isExperienceComponent,
   FragmentOptions,
   QueryContext,
@@ -68,7 +76,12 @@ const buildFragmentsForKeys = (
 ): FragmentResult => {
   const results = keys
     .filter(key => !visited.has(key))
-    .map(key => createFragment(key, visited, '', ctx, { includeBaseFragments: true }));
+    .map(key =>
+      createFragment(key, visited, '', ctx, {
+        includeBaseFragments: true,
+        insideComposition: true,
+      }),
+    );
 
   return {
     fragments: results.flatMap(r => r.fragments),
@@ -106,9 +119,11 @@ const createExperienceFragments = (
 /**
  * True for content types that hold a composition of their own.
  *
- * In Graph every `_Section` exposes a `composition` field, and a section-enabled
- * component is indexed as one — the Optimizely Forms container declares
- * `_component` with `sectionEnabled`, yet reports `_Section` among its types.
+ * `composition` comes from Graph's `_ISection` interface. Declaring
+ * `sectionEnabled` locally is not enough to be given it — Optimizely Forms'
+ * container implements `_ISection`, while an application component with the
+ * same declaration may not — so this is only a reliable answer for a type the
+ * caller already knows Graph treats as a section.
  */
 const holdsComposition = (contentType: RegistryEntry): boolean => {
   if (!('baseType' in contentType)) return false;
@@ -225,7 +240,7 @@ export const createFragment = (
   validateContentTypeName(contentTypeName, visited);
 
   const { damEnabled, maxFragmentThreshold } = ctx;
-  const { includeBaseFragments = true } = options;
+  const { includeBaseFragments = true, insideComposition = false } = options;
 
   const fragmentName = `${stripSourcePrefix(contentTypeName)}${suffix}`;
 
@@ -281,10 +296,17 @@ export const createFragment = (
     const isExperience =
       'baseType' in contentType && contentType.baseType === '_experience';
 
-    // A section only fetches its own composition when queried directly;
-    // nested in an experience, it already arrives via that composition tree.
+    // Sections fetch their own composition unless nested in one already.
+    // Standalone sections need composition to render properly. The field
+    // must be known to exist; use caller's schema list if available,
+    // otherwise fall back to the forms container.
+    const canBeAsked =
+      isRootCall ||
+      (ctx.sectionTypes ?
+        ctx.sectionTypes.has(stripSourcePrefix(contentTypeName))
+      : isFormContentType(contentTypeName));
     const isStandaloneSection =
-      isRootCall && !isExperience && holdsComposition(contentType);
+      canBeAsked && !insideComposition && !isExperience && holdsComposition(contentType);
 
     if (isExperience || isStandaloneSection) {
       // `_IExperience` is an interface a section does not implement, so the
@@ -333,13 +355,23 @@ export const createFragment = (
  * a caller only states what it cares about. It is turned into a strict
  * {@linkcode QueryContext} once, at the boundary, and never rebuilt after that.
  */
-export type QueryOptions = Partial<QueryContext> & FragmentOptions;
+export type QueryOptions = Partial<QueryContext> & FragmentOptions & {
+  filterShape?: FilterShape;
+  variationMode?: VariationMode;
+};
+
+const SINGLE_OP_NAMES: Record<FilterShape, string> = {
+  'by-key': 'GetContent',
+  'by-path': 'GetContentByPath',
+};
 
 const generateSingleContentQuery = (
   contentType: string,
   options: QueryOptions = {},
 ): string => {
   const ctx = createQueryContext(options);
+  const filterShape = options.filterShape ?? 'by-key';
+  const variationMode = options.variationMode ?? 'none';
   const span = startSingleQuerySpan(contentType, ctx.damEnabled, ctx.formsEnabled);
   const startTime = span ? performance.now() : 0;
 
@@ -347,10 +379,16 @@ const generateSingleContentQuery = (
   const fragments = result.fragments;
   const fragmentName = fragments.length > 0 ? '...' + contentType : '';
 
+  const filterVars = getFilterVarDecls(filterShape);
+  const variationVars = getVariationVarDecls(variationMode);
+  const allVars = [filterVars, variationVars].filter(Boolean).join(', ');
+  const whereClause = getFilterWhereClause(filterShape);
+  const variationClause = getVariationClause(variationMode);
+
   const query = `
 ${fragments.join('\n')}
-query GetContent($where: _ContentWhereInput, $variation: VariationInput) {
-  _Content(where: $where, variation: $variation) {
+query ${SINGLE_OP_NAMES[filterShape]}(${allVars}) {
+  _Content(${whereClause}${variationClause}) {
     item {
       __typename
       ${fragmentName}
@@ -386,11 +424,18 @@ export const createSingleContentQuery = withQueryCaching(
   generateSingleContentQuery,
 );
 
+const MULTIPLE_OP_NAMES: Record<FilterShape, string> = {
+  'by-key': 'ListContent',
+  'by-path': 'GetContentByPath',
+};
+
 const generateMultipleContentQuery = (
   contentType: string,
   options: QueryOptions = {},
 ): string => {
   const ctx = createQueryContext(options);
+  const filterShape = options.filterShape ?? 'by-path';
+  const variationMode = options.variationMode ?? 'none';
   const span = startMultipleQuerySpan(contentType, ctx.damEnabled, ctx.formsEnabled);
   const startTime = span ? performance.now() : 0;
 
@@ -398,10 +443,16 @@ const generateMultipleContentQuery = (
   const fragments = result.fragments;
   const fragmentName = fragments.length > 0 ? '...' + contentType : '';
 
+  const filterVars = getFilterVarDecls(filterShape);
+  const variationVars = getVariationVarDecls(variationMode);
+  const allVars = [filterVars, variationVars].filter(Boolean).join(', ');
+  const whereClause = getFilterWhereClause(filterShape);
+  const variationClause = getVariationClause(variationMode);
+
   const query = `
 ${fragments.join('\n')}
-query ListContent($where: _ContentWhereInput, $variation: VariationInput) {
-  _Content(where: $where, variation: $variation) {
+query ${MULTIPLE_OP_NAMES[filterShape]}(${allVars}) {
+  _Content(${whereClause}${variationClause}) {
     items {
       __typename
       ${fragmentName}

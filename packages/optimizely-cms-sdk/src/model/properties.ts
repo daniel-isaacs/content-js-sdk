@@ -12,7 +12,7 @@ export type AnyProperty = ArrayProperty<ArrayItems> | ArrayItems;
 
 export type INDEX_TYPE = 'disabled' | 'queryable' | 'searchable';
 
-export type RICHTEXT_PRESET = 'default' | 'expanded' | 'standard' | 'minimal';
+export type RICHTEXT_PRESET = 'default' | 'expanded' | 'minimal';
 
 /** How a property is displayed in the editing interface. Defaults to `available`. */
 export type DISPLAY_MODE = 'available' | 'hidden';
@@ -84,35 +84,35 @@ export type FloatProperty = BaseProperty & {
   maximum?: number;
 } & WithEnum<number>;
 
-type BaseContentReferenceProperty = BaseProperty & {
-  type: 'contentReference';
-  contentType?: AnyContentType | string;
-};
-
-export type ContentReferenceProperty =
-  | (BaseContentReferenceProperty & {
+/** Represents type constraints for "content" and "contentReference" properties */
+type ContentAndRefBlock =
+  | {
+      contentType: AnyContentType | string;
+      allowedTypes?: never;
+      restrictedTypes?: never;
+    }
+  | {
+      contentType?: never;
       allowedTypes: PermittedTypes[];
       restrictedTypes?: PermittedTypes[];
-    })
-  | (BaseContentReferenceProperty & {
+    }
+  | {
+      contentType?: never;
       allowedTypes?: PermittedTypes[];
       restrictedTypes: PermittedTypes[];
-    });
+    };
+
+type BaseContentReferenceProperty = BaseProperty & {
+  type: 'contentReference';
+};
 
 type BaseContentProperty = BaseProperty & {
   type: 'content';
-  contentType?: AnyContentType | string;
 };
 
-export type ContentProperty =
-  | (BaseContentProperty & {
-      allowedTypes: PermittedTypes[];
-      restrictedTypes?: PermittedTypes[];
-    })
-  | (BaseContentProperty & {
-      allowedTypes?: PermittedTypes[];
-      restrictedTypes: PermittedTypes[];
-    });
+export type ContentReferenceProperty = BaseContentReferenceProperty & ContentAndRefBlock;
+
+export type ContentProperty = BaseContentProperty & ContentAndRefBlock;
 
 export type ArrayItems =
   | StringProperty
@@ -143,4 +143,5 @@ export type ComponentProperty<T extends AnyContentType> = BaseProperty & {
 // - In the GUI is called
 export type LinkProperty = BaseProperty & {
   type: 'link';
+
 };
