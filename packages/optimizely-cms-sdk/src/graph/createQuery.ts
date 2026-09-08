@@ -108,7 +108,7 @@ const createExperienceFragments = (
   const experienceResult = buildFragmentsForKeys(experienceNodeKeys, visited, ctx);
   return {
     fragments: [
-      ...getFixedFragments(ctx.formsEnabled, includeExperienceFragment),
+      ...getFixedFragments(ctx.formsEnabled, includeExperienceFragment, ctx.compositionDepth),
       ...experienceResult.fragments,
       buildInterfaceFragment('_IComponent', experienceNodeKeys),
     ],
@@ -249,6 +249,7 @@ export const createFragment = (
 
   if (visited.size === 0) refreshCache();
   visited.add(fragmentName);
+  ctx.ancestors.add(fragmentName);
 
   // Create telemetry span only at root level (not for recursive calls)
   const isRootCall = visited.size === 1;
@@ -345,6 +346,7 @@ export const createFragment = (
     span.end();
   }
 
+  ctx.ancestors.delete(fragmentName);
   return result;
 };
 

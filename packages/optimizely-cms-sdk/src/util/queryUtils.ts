@@ -24,6 +24,7 @@ import { isFormContentType } from '../model/formContentTypes.js';
 import {
   DEFAULT_MAX_FRAGMENT_THRESHOLD,
   DEFAULT_EXPAND_CONTRACTS,
+  DEFAULT_COMPOSITION_DEPTH,
 } from '../graph/constants.js';
 
 const getImplementedContracts = (contentType: AnyContentType): RegistryEntry[] => {
@@ -101,6 +102,11 @@ export type QueryContext = {
    */
   formsEnabled: boolean;
   /**
+   * Nesting depth for ordinary composition fragments. Configurable via
+   * `config({ compositionDepth })`.
+   */
+  compositionDepth: number;
+  /**
    * Optional filter to exclude content types from fragment generation.
    * Return true to include a content type, false to exclude it.
    * Useful for skipping content types that have no registered component.
@@ -117,6 +123,11 @@ export type QueryContext = {
    * have the field.
    */
   sectionTypes?: ReadonlySet<string>;
+  /**
+   * Tracks the ancestor fragment chain during recursive fragment generation
+   * to prevent circular fragment references.
+   */
+  ancestors: Set<string>;
 };
 
 /**
@@ -156,8 +167,10 @@ export const createQueryContext = (
   maxFragmentThreshold: options.maxFragmentThreshold ?? DEFAULT_MAX_FRAGMENT_THRESHOLD,
   expandContracts: options.expandContracts ?? DEFAULT_EXPAND_CONTRACTS,
   formsEnabled: options.formsEnabled ?? false,
+  compositionDepth: options.compositionDepth ?? DEFAULT_COMPOSITION_DEPTH,
   typeFilter: options.typeFilter,
   sectionTypes: options.sectionTypes,
+  ancestors: options.ancestors ?? new Set(),
 });
 
 export type FragmentInfo = {
@@ -389,7 +402,7 @@ const handleContentProperty: PropertyHandler = (
   visited: Set<string>,
   ctx: QueryContext,
 ) => {
-  const { expandContracts, typeFilter } = ctx;
+  const { expandContracts, typeFilter, ancestors } = ctx;
   const resolved = resolveAllowedTypes(
     (property as any).allowedTypes,
     (property as any).restrictedTypes,
@@ -416,19 +429,25 @@ const handleContentProperty: PropertyHandler = (
   const subfields = ['__typename'];
 
   typesToInclude.forEach(key => {
+    const strippedKey = stripSourcePrefix(key);
     const result = createFragmentFor(key);
     includesDamAssetsFragments =
       includesDamAssetsFragments || result.includesDamAssetsFragments;
     extraFragments.push(...result.fragments);
-    subfields.push(`...${stripSourcePrefix(key)}`);
+    if (!ancestors?.has(strippedKey)) {
+      subfields.push(`...${strippedKey}`);
+    }
   });
 
   contractsToInclude.forEach(contractKey => {
+    const strippedKey = stripSourcePrefix(contractKey);
     const result = createFragmentFor(contractKey);
     includesDamAssetsFragments =
       includesDamAssetsFragments || result.includesDamAssetsFragments;
     extraFragments.push(...result.fragments);
-    subfields.push(`...${stripSourcePrefix(contractKey)}`);
+    if (!ancestors?.has(strippedKey)) {
+      subfields.push(`...${strippedKey}`);
+    }
   });
 
   const uniqueSubfields = [...new Set(subfields)].join(' ');
@@ -505,8 +524,6 @@ const handleArrayProperty: PropertyHandler = (
   visited: Set<string>,
   ctx: QueryContext,
 ) => {
-  // Forwards the whole context, which covers main's fix for `expandContracts`
-  // being dropped here (CMS-54935) along with every other query-wide setting.
   return convertProperty(name, (property as any).items, rootName, suffix, visited, ctx);
 };
 
