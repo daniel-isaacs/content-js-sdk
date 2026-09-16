@@ -1,4 +1,5 @@
 import {
+  BlankExperienceContentType,
   config,
   initContentTypeRegistry,
   initDisplayTemplateRegistry,
@@ -63,11 +64,16 @@ export function initialize() {
 
   config({
     apiKey: process.env.OPTIMIZELY_GRAPH_SINGLE_KEY!,
-    host: process.env.APPLICATION_HOST,
-    richTextFormat: 'json',
+    fragment: {
+      richTextFormat: 'json',
+    },
+    query: {
+      host: process.env.APPLICATION_HOST,
+    },
   });
 
   initContentTypeRegistry([
+    BlankExperienceContentType,
     ProductPage,
     StandardPage,
     StartPage,
