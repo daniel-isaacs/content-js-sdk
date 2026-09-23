@@ -10,6 +10,7 @@ import {
   initReactComponentRegistry,
   ReactContextAdapter,
 } from '@optimizely/cms-sdk/react/server';
+import BlankExperience from '../components/pages/BlankExperience';
 import Start, { StartPage } from '../components/pages/Start';
 import BlankSection from '../components/sections/Blank';
 import ImageCard, { ImageCardComponent } from '../components/elements/ImageCard';
@@ -64,6 +65,7 @@ export function initialize() {
 
   config({
     apiKey: process.env.OPTIMIZELY_GRAPH_SINGLE_KEY!,
+    graphUrl: process.env.OPTIMIZELY_GRAPH_GATEWAY!,
     fragment: {
       richTextFormat: 'json',
     },
@@ -95,6 +97,7 @@ export function initialize() {
 
   initReactComponentRegistry({
     resolver: {
+      BlankExperience,
       ProductPage: Product,
       StandardPage: Standard,
       StartPage: Start,
